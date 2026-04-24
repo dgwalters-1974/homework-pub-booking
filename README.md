@@ -122,7 +122,7 @@ full list with comments.
 | Key | What for | Cost |
 |---|---|---|
 | `NEBIUS_KEY` | All LLM calls (Ex5, Ex7 executor/planner, Ex8 manager persona) | ~£0.01 per scenario run |
-| `RASA_PRO_LICENSE` | Ex6 real Rasa container | [Free developer license](https://rasa.com/rasa-pro-developer-edition/) |
+| `RASA_PRO_LICENSE` | Ex6 real Rasa server (tier 2 and 3) | [Free developer license](https://rasa.com/rasa-pro-developer-edition/) |
 | `SPEECHMATICS_KEY` | Ex8 voice only — STT | Free tier is generous |
 | `RIME_API_KEY` | Ex8 voice only — TTS (Arcana model) | Free tier available |
 
@@ -203,6 +203,106 @@ This is the fastest way to debug. When your scenario fails silently,
 ```bash
 make narrate SESSION=sess_ac9861096e43
 ```
+
+---
+
+## Ex6 is different — you'll need three terminals
+
+**Ex5, Ex7, and Ex8 are single-process: one Python scenario that talks to a
+remote LLM.** `make ex5-real` just works if your `.env` is set up.
+
+**Ex6 is multi-process.** The Rasa structured half runs as two independent
+processes on your machine — a Rasa server and an action server — that
+your scenario POSTs to. This is not an accident of how we built the
+homework; it's how Rasa is designed, and it's how production agent systems
+actually deploy. Watching three log streams in three terminals is the
+point.
+
+### The three-terminal layout
+
+```
+ ┌────────────────┐        ┌────────────────┐        ┌──────────────────┐
+ │  Terminal 3    │───────▶│  Terminal 2    │───────▶│  Terminal 1      │
+ │                │ HTTP   │                │ HTTP   │                  │
+ │  make ex6-real │  POST  │ make rasa-serve│  POST  │ make rasa-actions│
+ │                │        │    :5005       │        │   :5055          │
+ │  (scenario)    │        │                │        │                  │
+ └────────────────┘        └────────────────┘        └──────────────────┘
+```
+
+Open three terminals in the repo, and run these in order:
+
+```bash
+# Terminal 1 — action server (runs ActionValidateBooking)
+make rasa-actions
+
+# Terminal 2 — Rasa server (trains model first time, then serves)
+make rasa-serve
+
+# Terminal 3 — your scenario (probes Rasa, runs if green)
+make ex6-real
+```
+
+Leave terminals 1 and 2 running the whole time you're working on Ex6.
+When you change `rasa_project/flows.yml` or `actions.py`, Ctrl-C terminal 2
+and re-run `make rasa-serve` to retrain.
+
+### `make ex6-real` won't guess for you
+
+If you run `make ex6-real` before starting the other two terminals, you
+get this:
+
+```
+✗ Rasa not reachable at localhost:5005.
+
+Ex6 real mode needs two processes running in separate terminals:
+
+  ┌──────────────────────────────────────────────────────────────┐
+  │  Terminal 1 (action server):    make rasa-actions            │
+  │  Terminal 2 (rasa server):      make rasa-serve              │
+  │  Terminal 3 (this one):         make ex6-real                │
+  └──────────────────────────────────────────────────────────────┘
+```
+
+Clear failure. Specific fix. The exercise deliberately does NOT auto-start
+Rasa for you because watching the logs in separate terminals is half the
+lesson.
+
+### `make ex6-help` if you forget the recipe
+
+Any time you want the three-terminal setup printed out:
+
+```bash
+make ex6-help
+```
+
+### What if you don't have a Rasa Pro license yet?
+
+Ex6 has three tiers:
+
+| Tier | Command | Needs | What it teaches |
+|---|---|---|---|
+| **1** | `make ex6` | nothing | HTTP contract shape (mock server inside the scenario) |
+| **2** | `make ex6-real` | Rasa Pro license + 3 terminals | Multi-process coordination, real CALM flows |
+| **3** | `make ex6-auto` | Rasa Pro license only | Fast feedback loop once you've learned tier 2 |
+
+**Tier 1 lets you progress without a license.** The mock server matches
+Rasa's HTTP response shape, so your `normalise_booking_payload` and
+`RasaStructuredHalf.run` implementations validate end-to-end. You lose
+about 40% of Ex6's Behavioural points (the ones that grade against real
+CALM flows) but keep everything else.
+
+Tier 3 auto-spawns the two Rasa processes inside the scenario runner.
+Use this when you've internalised the two-terminal pattern and just want
+quick validation — e.g. right before committing. The CI grader uses
+tier 3 for reproducible scoring.
+
+### Full walkthrough
+
+[`docs/rasa-setup.md`](docs/rasa-setup.md) has the complete guide —
+license signup, first-run timing, what each log file means, and the
+top-5 things that break on first run. If you hit anything weird, that
+doc is the first place to look.
 
 ---
 

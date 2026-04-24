@@ -142,10 +142,6 @@ def restore_starter() -> None:
         backup_path = BACKUP / name
         if backup_path.exists():
             shutil.copytree(backup_path, target)
-    # Remove the docker-compose file the solution drops
-    compose = REPO / "docker-compose.rasa.yml"
-    if compose.exists():
-        compose.unlink()
 
 
 def apply_solution() -> int:
