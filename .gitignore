@@ -70,3 +70,7 @@ tests/private/*
 # sibling private repo (homework-pub-booking-solutions) that isn't open.
 solution/
 educator/_scratch/
+
+# ── Obsidian guide ────────────────────────────────────────────────────
+obsidian-guide/
+CLAUDE.md
