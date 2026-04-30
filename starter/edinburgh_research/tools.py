@@ -23,6 +23,8 @@ _SAMPLE_DATA = Path(__file__).parent / "sample_data"
 import json
 from .integrity import record_tool_call
 
+from html import escape
+
 # ---------------------------------------------------------------------------
 # TODO 1 — venue_search
 # ---------------------------------------------------------------------------
@@ -213,6 +215,7 @@ def calculate_cost(
 # ---------------------------------------------------------------------------
 # TODO 4 — generate_flyer
 # ---------------------------------------------------------------------------
+
 def generate_flyer(session: Session, event_details: dict) -> ToolResult:
     """Produce an HTML flyer and write it to workspace/flyer.html.
 
@@ -235,8 +238,72 @@ def generate_flyer(session: Session, event_details: dict) -> ToolResult:
     IMPORTANT: this tool MUST be registered with parallel_safe=False
     because it writes a file.
     """
-    raise NotImplementedError("TODO 4: implement generate_flyer")
 
+    html_doc = f"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>{escape(event_details['venue_name'])} — {escape(str(event_details['date']))}</title>
+<style>
+  body {{ font-family: -apple-system, system-ui, sans-serif; max-width: 640px;
+          margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; }}
+  h1 {{ font-size: 2rem; margin-bottom: 0.25rem; }}
+  .meta {{ color: #555; margin-bottom: 1.5rem; }}
+  .card {{ border: 1px solid #e5e5e5; border-radius: 8px;
+           padding: 1rem 1.25rem; margin-bottom: 1rem; }}
+  .card h2 {{ margin-top: 0; font-size: 1.1rem; }}
+  .row {{ display: flex; justify-content: space-between; padding: 0.25rem 0; }}
+  .total {{ font-weight: 600; border-top: 1px solid #e5e5e5;
+            margin-top: 0.5rem; padding-top: 0.5rem; }}
+</style></head>
+<body>
+  <h1>Booking at <span data-testid="venue_name">{escape(str(event_details["venue_name"]))}</span></h1>
+  <div class="meta"><span data-testid="venue_address">{escape(str(event_details["venue_address"]))}</span></div>
+
+  <div class="card">
+    <h2>Event</h2>
+    <div class="row"><span>Date</span><span data-testid="date">{escape(str(event_details["date"]))}</span></div>
+    <div class="row"><span>Time</span><span data-testid="time">{escape(str(event_details["time"]))}</span></div>
+    <div class="row"><span>Party size</span><span data-testid="party_size">{escape(str(event_details["party_size"]))}</span></div>
+  </div>
+
+  <div class="card">
+    <h2>Weather</h2>
+    <div class="row">
+      <span data-testid="condition">{escape(str(event_details["condition"]))}</span>
+      <span data-testid="temperature_c">{escape(str(event_details["temperature_c"]))}°C</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Cost</h2>
+    <div class="row">
+      <span>Deposit due now</span>
+      <span>£<span data-testid="deposit_required_gbp">{escape(str(event_details["deposit_required_gbp"]))}</span></span>
+    </div>
+    <div class="row total">
+      <span>Total</span>
+      <span>£<span data-testid="total_gbp">{escape(str(event_details["total_gbp"]))}</span></span>
+    </div>
+  </div>
+</body></html>
+"""
+
+    path = session.workspace_dir / "flyer.html"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = html_doc.encode("utf-8")
+    bytes_written = path.write_bytes(payload)
+
+    output = {"path": str(path), "bytes_written": bytes_written}
+    summary = f"generate_flyer: wrote {path} ({len(html_doc)} chars)"
+
+    # Integrity hook — record before returning so the check can compare
+    # the flyer's facts against earlier tool outputs (weather, pricing, etc.)
+    record_tool_call("generate_flyer",
+                     {"event_details": event_details},
+                     output)
+
+    return ToolResult(success=True,
+                      output=output,
+                      summary=summary)
 
 # ---------------------------------------------------------------------------
 # Registry builder — DO NOT MODIFY the name, signature, or registration calls.
