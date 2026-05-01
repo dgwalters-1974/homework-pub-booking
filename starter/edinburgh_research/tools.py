@@ -99,6 +99,11 @@ def get_weather(city: str, date: str) -> ToolResult:
             weather = json.load(f)
             filtered_weather = weather[city.lower()][date]
     except KeyError:
+        record_tool_call(
+            "get_weather",
+            {"city": city, "date": date},
+            {"error": "city or date not found"},
+        )
         return ToolResult(
             success=False,
             output={"city": city, "date": date},
