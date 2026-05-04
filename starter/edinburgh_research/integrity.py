@@ -65,7 +65,7 @@ def extract_money_facts(text: str) -> list[str]:
     """Find all £<number> occurrences, HTML tags stripped or not."""
     # Strip HTML tags first so e.g. <dd>£540</dd> matches cleanly.
     stripped = re.sub(r"<[^>]+>", " ", text)
-    return re.findall(r"£\d+(?:\.\d+)?", stripped)
+    return re.findall(r"£\s*\d+(?:\.\d+)?", stripped) # added \s* to allow for leading/trailing whitespace
 
 
 def extract_temperature_facts(text: str) -> list[str]:
@@ -109,7 +109,8 @@ def fact_appears_in_log(fact: Any, log: list[ToolCallRecord] | None = None) -> b
             return any(_scan(v) for v in obj)
         return False
 
-    return any(_scan(r.output) or _scan(r.arguments) for r in records)
+    # return any(_scan(r.output) or _scan(r.arguments) for r in records)
+    return any(_scan(r.output) for r in records) # changed to only scan the output (old line above)
 
 
 # ---------------------------------------------------------------------------

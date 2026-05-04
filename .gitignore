@@ -74,3 +74,14 @@ educator/_scratch/
 # ── Obsidian guide ────────────────────────────────────────────────────
 obsidian-guide/
 CLAUDE.md
+
+# ── Claude Code per-project settings ─────────────────────────────────
+# Local Claude Code settings + any in-repo agent state. The persistent
+# memory store lives in ~/.claude/projects/.../memory/ (outside the repo)
+# and is never visible to git, but ignore .claude/ defensively.
+.claude/
+
+# ── Personal notes (never commit) ────────────────────────────────────
+# Working notes, bug diagnoses, draft answers, etc. — anything you want
+# to keep alongside the code without publishing.
+notes/

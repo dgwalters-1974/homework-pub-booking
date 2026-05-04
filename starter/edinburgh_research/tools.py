@@ -22,7 +22,7 @@ from sovereign_agent.errors import ToolError
 from sovereign_agent.session.directory import Session
 from sovereign_agent.tools.registry import ToolRegistry, ToolResult, _RegisteredTool
 
-from .integrity import record_tool_call
+from .integrity import _TOOL_CALL_LOG, record_tool_call
 
 _SAMPLE_DATA = Path(__file__).parent / "sample_data"
 
@@ -46,6 +46,23 @@ def venue_search(near: str, party_size: int, budget_max_gbp: int = 1000) -> Tool
     MUST call record_tool_call(...) before returning so the integrity
     check can see what data was produced.
     """
+    # Spiral cap (per docs/real-mode-failures.md:51-73). HARD RULES from the
+    # task string don't survive planner compression, so the prompt-level
+    # "Do NOT call venue_search more than once" is invisible to the executor
+    # LLM. This tool-level guard is the only constraint that reliably runs.
+    search_count = sum(1 for r in _TOOL_CALL_LOG if r.tool_name == "venue_search")
+    if search_count >= 3:
+        record_tool_call(
+            "venue_search",
+            {"near": near, "party_size": party_size, "budget_max_gbp": budget_max_gbp},
+            {"error": "too_many_searches", "count": search_count},
+        )
+        return ToolResult(
+            success=False,
+            output={"error": "too_many_searches", "count": search_count},
+            summary="STOP calling venue_search; use the results you already have.",
+        )
+
     # TODO 1a: load venues.json. Raise ToolError(SA_TOOL_DEPENDENCY_MISSING)
     #          if the file is absent.
     try:
