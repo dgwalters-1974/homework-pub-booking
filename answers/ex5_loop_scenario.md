@@ -185,6 +185,8 @@ Compare these to the original task string at `run.py:201-220`, which contains ex
 
 In offline mode this doesn't change behaviour because `FakeLLMClient` runs scripted responses regardless of prompt. In real mode (`make ex5-real`), this is the documented root cause of the Qwen3-32B `venue_search` spiral described in `docs/real-mode-failures.md:15-83`.
 
+It's important to remember that Qwen3-32B is an instruct model not a reasoning one so when it gets a negative result e.g. 0 search results, it doesn't 'reason' why, it just tries something else in an 'pattern matching' manner.
+
 **Confirmed in real mode (session `sess_d15fc62e370f`).** A `make ex5-real` run produced *three* subgoals — and dropped *more* constraints than offline did:
 
 - `sg_1`: "Research and compile a list of 3-5 Edinburgh venues with basic details"

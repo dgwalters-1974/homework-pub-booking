@@ -24,6 +24,29 @@ an LLM for each turn. It's deterministic given identical history +
 model seed, which makes the tests stable even though we talk to a
 real model.
 
+Example conversation:
+```
+ss_65caa20246e8
+Text mode. Type a message to Alasdair (pub manager); blank line to quit.
+Session: sess_65caa20246e8
+------------------------------------------------------------
+you> hello there
+alasdair> What can I do for ye? Booking a table, are ye?
+you> yes please i'd like to book a table fot the 25th April
+alasdair> How many in yer party?
+you> there will be 6 of us
+alasdair> Aye, we can do that. I'll pencil you in for 25th April. What's the contact number?
+you> 123456
+alasdair> Got it, 123456. What time were ye thinkin'?
+you> 7.30pm
+alasdair> Aye, 7:30pm on 25th April, six of ye. I've got ye booked in.
+you> thanks for that
+alasdair> Ye're welcome, laddie.
+------------------------------------------------------------
+Conversation ended. Trace: /Users/dgwalters/Library/Application Support/sovereign-agent/homework/ex8/sess_65caa20246e8/logs/trace.jsonl
+dgwalters@boomer homework-pub-booking %
+```
+
 ## Citations
 
 - starter/voice_pipeline/voice_loop.py — run_voice_mode

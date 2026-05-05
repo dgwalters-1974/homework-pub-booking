@@ -18,25 +18,60 @@ flows:
   # The rest of the flow branches on validation_error to utter the
   # right response.
   #
-  # Why only ONE flow?
-  #   Earlier designs had `resume_from_loop` (programmatic re-entry)
-  #   and `request_research` (bounces back to the loop). We removed
-  #   both because:
-  #   - `resume_from_loop`'s `collect:` steps would need user-facing
-  #     utter_ask_* responses, which we don't have (and don't want —
-  #     the homework triggers flows programmatically, never via
-  #     user typing).
-  #   - `request_research`'s reverse-handoff is better done at the
-  #     HandoffBridge level in Python (Ex7), not inside Rasa. Keeping
-  #     the reverse path out of Rasa also teaches students that the
-  #     agent-bridge pattern spans process boundaries — it isn't a
-  #     dialog concern.
+  # Why TWO flows (confirm_booking + resume_from_loop) but no request_research?
+  #   The spec mentions three flows. We implement two and deliberately
+  #   omit the third:
+  #   - `confirm_booking` — first-attempt entry point. The bridge POSTs
+  #     /confirm_booking when it has fresh booking data from the loop half.
+  #   - `resume_from_loop` — re-entry point after the loop half has
+  #     finished further research. Functionally identical to
+  #     confirm_booking for now (same validation, same branching), but a
+  #     distinct entry point lets the bridge distinguish "fresh attempt"
+  #     from "resumed after research" without changing the flow logic.
+  #     The two could diverge as the scenario grows (e.g. different
+  #     telemetry, different timeouts, different escalation rules).
+  #   - `request_research` is OMITTED. This is a *reverse handoff* —
+  #     structured half asking the loop half to redo research with new
+  #     constraints. That belongs in the bridge layer (Ex7), not Rasa.
+  #     Rasa flows are forward dialog logic; the round-trip pattern
+  #     crosses process boundaries and is best owned by the Python
+  #     bridge code.
+  #
+  #   Note: in CALM, slots are populated programmatically via the
+  #   `metadata.booking` field on the POST — there are no user-facing
+  #   `collect:` steps because the homework never uses Rasa for
+  #   user-typed input.
   # ─────────────────────────────────────────────────────────────────
   confirm_booking:
     description: >
       Confirm a pub booking after validating party size and deposit.
       Triggers when the user sends the programmatic command
       /confirm_booking with booking metadata.
+    steps:
+      - id: validate
+        action: action_validate_booking
+        next:
+          - if: "slots.validation_error is not null"
+            then: rejected
+          - else: confirmed
+      - id: rejected
+        action: utter_booking_rejected
+        next: END
+      - id: confirmed
+        action: utter_booking_confirmed
+        next: END
+
+  resume_from_loop:
+    description: >
+      Re-enter the structured half after the loop half hands off
+      mid-scenario (e.g. after the loop did additional research in
+      response to a previous rejection). Triggers when the bridge
+      POSTs /resume_from_loop with booking metadata. Currently mirrors
+      confirm_booking exactly — same validation, same branching — but
+      kept as a distinct entry point so the bridge can signal intent
+      ("first attempt" vs "resumed after research") without changing
+      the flow logic. The two flows can diverge later if the scenario
+      requires per-source behaviour.
     steps:
       - id: validate
         action: action_validate_booking
