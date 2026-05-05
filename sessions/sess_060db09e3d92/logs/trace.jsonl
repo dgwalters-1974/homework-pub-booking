@@ -1,0 +1,6 @@
+{"event_type": "voice.utterance_in", "actor": "user", "timestamp": "2026-05-05T14:39:28.292923+00:00", "payload": {"text": "I'd like to book a table for six on Friday night .", "turn": 0, "mode": "voice"}}
+{"event_type": "voice.utterance_out", "actor": "manager", "timestamp": "2026-05-05T14:39:29.295739+00:00", "payload": {"text": "Aye, we can do that. I'll pencil you in for Friday at what time? What's the contact number?", "turn": 0, "mode": "voice"}}
+{"event_type": "voice.utterance_in", "actor": "user", "timestamp": "2026-05-05T14:39:40.597732+00:00", "payload": {"text": "730 .", "turn": 1, "mode": "voice"}}
+{"event_type": "voice.utterance_out", "actor": "manager", "timestamp": "2026-05-05T14:39:41.470710+00:00", "payload": {"text": "Aye, we can do that. I'll pencil you in for Friday at 730. What's the contact number?", "turn": 1, "mode": "voice"}}
+{"event_type": "voice.utterance_in", "actor": "user", "timestamp": "2026-05-05T14:39:57.370499+00:00", "payload": {"text": "9991234 .", "turn": 2, "mode": "voice"}}
+{"event_type": "voice.utterance_out", "actor": "manager", "timestamp": "2026-05-05T14:39:57.866292+00:00", "payload": {"text": "Sorted, 9991234. See you Friday.", "turn": 2, "mode": "voice"}}

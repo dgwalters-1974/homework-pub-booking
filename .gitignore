@@ -5,10 +5,20 @@
 .env.*.local
 
 # ── Session artifacts ────────────────────────────────────────────────
-# Sessions contain API output and should not be committed.
-sessions/
+# Default-stored sessions (~/Library/Application Support/...) are not committed.
+# A repo-local `sessions/` directory IS committed — the rubric expects session
+# artefacts at submission time so the LLM judge can verify Ex9 citations.
 demo_sessions_*/
 *.session.json
+
+# Audio captured during Ex8 voice mode — never commit (contains the user's voice).
+# Trace events in logs/trace.jsonl already capture the transcribed text.
+sessions/**/*.wav
+sessions/**/*.mp3
+sessions/**/*.m4a
+sessions/**/*.flac
+sessions/**/*.ogg
+sessions/**/*.opus
 
 # ── Python standard ──────────────────────────────────────────────────
 __pycache__/

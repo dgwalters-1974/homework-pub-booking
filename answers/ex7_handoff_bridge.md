@@ -64,7 +64,7 @@ The loop half's next subgoal sees `prior_result` (so it knows what was tried) an
 
 ## Evidence — `make ex7` (offline, persisted)
 
-Session: `sess_7adc10a30e4c` at `~/Library/Application Support/sovereign-agent/examples/ex7-handoff-bridge/sess_7adc10a30e4c/`.
+Session: `sess_7adc10a30e4c` at `sessions/sess_7adc10a30e4c/`.
 
 I set `persist=True` in `starter/handoff_bridge/run.py:125` so artefacts survive the run despite it being 'fake'.
 
@@ -189,10 +189,10 @@ After 3 rounds of rejection, `session.mark_failed(...)` is called (state transit
 
 ### Session artefacts
 
-- `~/Library/Application Support/sovereign-agent/examples/ex7-handoff-bridge/sess_7adc10a30e4c/session.json` — terminal state, mark_complete output, full round history
-- `~/Library/.../sess_7adc10a30e4c/logs/trace.jsonl` — 14 events: 2 `bridge.round_start`, 2 `planner.called`, 2 `planner.produced_subgoals`, 4 `executor.tool_called`, 4 `session.state_changed`
-- `~/Library/.../sess_7adc10a30e4c/ipc/handoff_to_structured.json` — round-2 forward handoff (the one round-2's `write_handoff` left in place; round-1's was overwritten in-place)
-- `~/Library/.../sess_7adc10a30e4c/logs/handoffs/` — empty (see Fail-closed observation above)
+- `sessions/sess_7adc10a30e4c/session.json` — terminal state, mark_complete output, full round history
+- `sessions/sess_7adc10a30e4c/logs/trace.jsonl` — 14 events: 2 `bridge.round_start`, 2 `planner.called`, 2 `planner.produced_subgoals`, 4 `executor.tool_called`, 4 `session.state_changed`
+- `sessions/sess_7adc10a30e4c/ipc/handoff_to_structured.json` — round-2 forward handoff (the one round-2's `write_handoff` left in place; round-1's was overwritten in-place)
+- `sessions/sess_7adc10a30e4c/logs/handoffs/` — empty (see Fail-closed observation above)
 
 ### Source code
 

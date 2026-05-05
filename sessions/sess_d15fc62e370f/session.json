@@ -1,0 +1,53 @@
+{
+  "session_id": "sess_d15fc62e370f",
+  "version": 1,
+  "created_at": "2026-05-04T17:37:23.740895+00:00",
+  "updated_at": "2026-05-04T17:37:40.337186+00:00",
+  "scenario": "edinburgh-research",
+  "state": "executing",
+  "user_id": null,
+  "current_half": "loop",
+  "planner": {
+    "subgoals": [
+      {
+        "id": "sg_1",
+        "description": "Research and compile a list of 3-5 Edinburgh venues with basic details",
+        "success_criterion": "List of venues with name, location, capacity, and price range is available",
+        "estimated_tool_calls": 1,
+        "depends_on": [],
+        "assigned_half": "loop",
+        "status": "pending"
+      },
+      {
+        "id": "sg_2",
+        "description": "Gather detailed information about the top venue including amenities and contact details",
+        "success_criterion": "Detailed venue data including photos, amenities, and contact info is collected",
+        "estimated_tool_calls": 2,
+        "depends_on": [
+          "sg_1"
+        ],
+        "assigned_half": "loop",
+        "status": "pending"
+      },
+      {
+        "id": "sg_3",
+        "description": "Create a promotional flyer using the selected venue's details",
+        "success_criterion": "Flyer draft is generated with venue information and event description",
+        "estimated_tool_calls": 1,
+        "depends_on": [
+          "sg_2"
+        ],
+        "assigned_half": "loop",
+        "status": "pending"
+      }
+    ]
+  },
+  "executor": {},
+  "structured": {},
+  "memory": {},
+  "handoff_history": [],
+  "bare_mode": false,
+  "config_overrides": {},
+  "result": null,
+  "resumed_from": null
+}

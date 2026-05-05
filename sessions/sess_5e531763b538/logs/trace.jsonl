@@ -1,0 +1,2 @@
+{"event_type": "voice.utterance_in", "actor": "user", "timestamp": "2026-05-05T14:37:16.719819+00:00", "payload": {"text": "I'd like to book a pub .", "turn": 0, "mode": "voice"}}
+{"event_type": "voice.utterance_out", "actor": "manager", "timestamp": "2026-05-05T14:37:17.402715+00:00", "payload": {"text": "How many in your party?", "turn": 0, "mode": "voice"}}

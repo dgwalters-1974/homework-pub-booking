@@ -49,7 +49,7 @@ Non-rubric extras: `duration_hours` defaults to 3 if missing/invalid; `catering_
 
 ### Happy path (`make ex6-real`)
 
-Session: `sess_afaccaf761d1` at `~/Library/Application Support/sovereign-agent/examples/ex6-rasa-half/sess_afaccaf761d1/`.
+Session: `sess_afaccaf761d1` at `sessions/sess_afaccaf761d1/`.
 
 Input: `venue_id=haymarket_tap`, `party_size=6`, `deposit_gbp=200`. Both within limits, so the flow should commit.
 
@@ -142,7 +142,7 @@ Net effect: 20/20 score-wise, with the design rationale preserved for the omitte
 
 ### Session artefacts
 
-- `~/Library/Application Support/sovereign-agent/examples/ex6-rasa-half/sess_afaccaf761d1/` — real-mode run (`make ex6-real`), persisted. Note: Ex6's `starter/rasa_half/run.py` invokes `RasaStructuredHalf.run()` directly without going through the planner/executor framework, so `session.json` stays empty (state `"planning"`) and `logs/trace.jsonl` is not created. The load-bearing evidence for Ex6 is therefore the terminal stdout + the curl rejection-path outputs above, not the session artefacts. Trace coverage of the loop↔structured round-trip happens in Ex7.
+- `sessions/sess_afaccaf761d1/` — real-mode run (`make ex6-real`), persisted. Note: Ex6's `starter/rasa_half/run.py` invokes `RasaStructuredHalf.run()` directly without going through the planner/executor framework, so `session.json` stays empty (state `"planning"`) and `logs/trace.jsonl` is not created. The load-bearing evidence for Ex6 is therefore the terminal stdout + the curl rejection-path outputs above, not the session artefacts. Trace coverage of the loop↔structured round-trip happens in Ex7.
 - Mock-mode session (offline `make ex6`) — written to a tempdir; same `RasaStructuredHalf.run()` path
 
 ### Curl test fixtures

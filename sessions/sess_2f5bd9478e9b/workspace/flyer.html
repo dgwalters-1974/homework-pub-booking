@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Haymarket Tap — 2026-04-25</title>
+<style>
+  body { font-family: -apple-system, system-ui, sans-serif; max-width: 640px;
+          margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; }
+  h1 { font-size: 2rem; margin-bottom: 0.25rem; }
+  .meta { color: #555; margin-bottom: 1.5rem; }
+  .card { border: 1px solid #e5e5e5; border-radius: 8px;
+           padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .card h2 { margin-top: 0; font-size: 1.1rem; }
+  .row { display: flex; justify-content: space-between; padding: 0.25rem 0; }
+  .total { font-weight: 600; border-top: 1px solid #e5e5e5;
+            margin-top: 0.5rem; padding-top: 0.5rem; }
+</style></head>
+<body>
+  <h1>Booking at <span data-testid="venue_name">Haymarket Tap</span></h1>
+  <div class="meta"><span data-testid="venue_address">12 Dalry Rd, Edinburgh EH11 2BG</span></div>
+
+  <div class="card">
+    <h2>Event</h2>
+    <div class="row"><span>Date</span><span data-testid="date">2026-04-25</span></div>
+    <div class="row"><span>Time</span><span data-testid="time">19:30</span></div>
+    <div class="row"><span>Party size</span><span data-testid="party_size">6</span></div>
+  </div>
+
+  <div class="card">
+    <h2>Weather</h2>
+    <div class="row">
+      <span data-testid="condition">cloudy</span>
+      <span data-testid="temperature_c">12°C</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Cost</h2>
+    <div class="row">
+      <span>Deposit due now</span>
+      <span>£<span data-testid="deposit_required_gbp">0</span></span>
+    </div>
+    <div class="row total">
+      <span>Total</span>
+      <span>£<span data-testid="total_gbp">540</span></span>
+    </div>
+  </div>
+</body></html>
