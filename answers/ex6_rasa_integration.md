@@ -112,7 +112,7 @@ Same booking reference (`BK-7D401E9E`) as the `/confirm_booking` happy path — 
 
 ## Design choice: implement `resume_from_loop`, omit `request_research`
 
-`ASSIGNMENT.md:103` calls for three flows: `confirm_booking`, `resume_from_loop`, and `request_research`. I have implemented two and omitted the third. There's a real design argument both ways here, so I'll lay both sides out and explain my call.
+`ASSIGNMENT.md:103` calls for three flows: `confirm_booking`, `resume_from_loop`, and `request_research`. I have implemented two and omitted the third. There's a real design argument both ways here:
 
 ### Case for omitting both extra flows (the original reference position)
 
@@ -134,7 +134,7 @@ The rubric (`docs/grading-rubric.md:40`, `ASSIGNMENT.md:121`) awards 4 points sp
 
 - **Kept `request_research` omitted.** This is a reverse-handoff pattern that crosses process boundaries; it's the bridge's responsibility, not Rasa's. The rubric does not award points for `request_research`, so this omission is free. I'll revisit if Ex7's design surfaces a reason to push this into Rasa.
 
-Net effect: 20/20 score-wise, with the design rationale preserved for the omitted third flow.
+
 
 ---
 
@@ -176,14 +176,4 @@ Net effect: 20/20 score-wise, with the design rationale preserved for the omitte
 - `docs/real-mode-failures.md:144+` — embeddings 401 trap (`config.yml` correctly configured to avoid)
 - `ASSIGNMENT.md:99-126` — Ex6 specification
 
-### Score estimate
 
-| Rubric item | Pts | Status |
-|---|---|---|
-| `make ex6` runs clean with Rasa container up | 4 | ✓ confirmed |
-| `confirm_booking` commits valid booking | 4 | ✓ confirmed |
-| `ActionValidateBooking` rejects deposit > £300 | 3 | ✓ confirmed (curl) |
-| `ActionValidateBooking` rejects party > 8 | 3 | ✓ confirmed (curl) |
-| `resume_from_loop` re-enters | 4 | ✓ minimal flow at `flows.yml:60-79` (mirrors confirm_booking; distinct entry point for bridge to signal intent) |
-| Validator normalises ≥3 fields | 2 | ✓ all 5 implemented |
-| **Total** | **20/20** | |

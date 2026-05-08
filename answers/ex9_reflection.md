@@ -64,7 +64,7 @@ The cause is structural. The planner is instructed (`planner/__init__.py:94`) to
 
 Manifest discipline surfaces this. Because every `venue_search` call is recorded in `_TOOL_CALL_LOG`, tools can read their own call history regardless of what the planner emitted. The spiral cap I added at `tools.py:49-64` (`if search_count >= 3: return success=False`) reads `_TOOL_CALL_LOG` and shuts down repeat calls *at the tool layer* — bypassing every constraint-loss point upstream. It's the only enforcement point that reliably runs in production.
 
-The lesson: prompt-level rules are decorative when the framework summarises between layers. Business invariants — deposit caps, party caps, retry budgets — must live inside the tool's Python implementation, gated on observable runtime state captured by manifest discipline. Without it, no production guarantees survive the planner→executor channel.
+The lesson: prompt-level rules are decorative when the framework summarises between layers. Business invariants — deposit caps, party caps, retry budgets — must live inside the tool's Python implementation, gated on observable runtime state captured by manifest discipline. The same architectural principle is why Ex6's structured half exists at all: deterministic rules in Python at a process boundary (`actions.py:119-123`), enforced regardless of LLM behaviour — Rasa is overkill for two `if`-statements today but earns its keep the moment users type free-form or the rule set grows. Without enforcement at one of these layers, no production guarantees survive the planner→executor channel.
 
 ### Citation
 
