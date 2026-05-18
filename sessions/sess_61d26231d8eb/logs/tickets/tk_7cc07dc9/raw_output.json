@@ -1,0 +1,69 @@
+{
+  "subgoal_id": "sg_1",
+  "success": true,
+  "final_answer": "(handoff requested)",
+  "tool_calls_made": [
+    {
+      "name": "venue_search",
+      "arguments": {
+        "near": "Edinburgh City Centre",
+        "party_size": 10,
+        "budget_max_gbp": 1000
+      },
+      "success": true,
+      "summary": "venue_search(near=Edinburgh City Centre, party_size=10, budget_max_gbp=1000): 0 result(s)",
+      "requires_human_approval": false
+    },
+    {
+      "name": "venue_search",
+      "arguments": {
+        "near": "Old Town",
+        "party_size": 20,
+        "budget_max_gbp": 1500
+      },
+      "success": true,
+      "summary": "venue_search(near=Old Town, party_size=20, budget_max_gbp=1500): 0 result(s)",
+      "requires_human_approval": false
+    },
+    {
+      "name": "handoff_to_structured",
+      "arguments": {
+        "reason": "Venue search returned no results for multiple locations/party sizes. Need more specific criteria or user confirmation.",
+        "context": "Research Edinburgh venue details including name, location, capacity, and amenities",
+        "data": {
+          "attempts": [
+            {
+              "near": "Edinburgh City Centre",
+              "party_size": 10
+            },
+            {
+              "near": "Old Town",
+              "party_size": 20
+            }
+          ]
+        }
+      },
+      "success": true,
+      "summary": "handoff to structured half: Venue search returned no results for multiple locations/party sizes. Need more specific criteria or user confirmation.",
+      "requires_human_approval": false
+    }
+  ],
+  "turns_used": 3,
+  "handoff_requested": true,
+  "handoff_payload": {
+    "reason": "Venue search returned no results for multiple locations/party sizes. Need more specific criteria or user confirmation.",
+    "context": "Research Edinburgh venue details including name, location, capacity, and amenities",
+    "data": {
+      "attempts": [
+        {
+          "near": "Edinburgh City Centre",
+          "party_size": 10
+        },
+        {
+          "near": "Old Town",
+          "party_size": 20
+        }
+      ]
+    }
+  }
+}

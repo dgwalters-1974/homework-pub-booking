@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "from_half": "loop",
+  "to_half": "structured",
+  "written_at": "2026-05-18T14:38:52.743761+00:00",
+  "session_id": "sess_e11860274d75",
+  "reason": "No venues found after multiple searches with increasing budget and central locations",
+  "context": "Unable to satisfy subgoal due to lack of venue search results",
+  "data": {
+    "search_attempts": [
+      {
+        "near": "Edinburgh",
+        "party_size": 50,
+        "budget_max_gbp": 1000
+      },
+      {
+        "near": "city center",
+        "party_size": 50,
+        "budget_max_gbp": 1500
+      },
+      {
+        "near": "Old Town",
+        "party_size": 50,
+        "budget_max_gbp": 2000
+      },
+      {
+        "near": "New Town",
+        "party_size": 50,
+        "budget_max_gbp": 2500
+      }
+    ],
+    "results_count": 0
+  },
+  "return_instructions": ""
+}

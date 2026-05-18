@@ -1,0 +1,90 @@
+{
+  "subgoal_id": "sg_1",
+  "success": true,
+  "final_answer": "(handoff requested)",
+  "tool_calls_made": [
+    {
+      "name": "venue_search",
+      "arguments": {
+        "near": "Edinburgh",
+        "party_size": 50,
+        "budget_max_gbp": 1000
+      },
+      "success": true,
+      "summary": "venue_search(near=Edinburgh, party_size=50, budget_max_gbp=1000): 0 result(s)",
+      "requires_human_approval": false
+    },
+    {
+      "name": "venue_search",
+      "arguments": {
+        "near": "Edinburgh",
+        "party_size": 20,
+        "budget_max_gbp": 1000
+      },
+      "success": true,
+      "summary": "venue_search(near=Edinburgh, party_size=20, budget_max_gbp=1000): 0 result(s)",
+      "requires_human_approval": false
+    },
+    {
+      "name": "venue_search",
+      "arguments": {
+        "near": "Edinburgh",
+        "party_size": 10,
+        "budget_max_gbp": 1000
+      },
+      "success": true,
+      "summary": "venue_search(near=Edinburgh, party_size=10, budget_max_gbp=1000): 0 result(s)",
+      "requires_human_approval": false
+    },
+    {
+      "name": "handoff_to_structured",
+      "arguments": {
+        "reason": "Unable to retrieve any venues despite multiple search attempts with varying party sizes.",
+        "context": "Research and compile a list of Edinburgh venues with key details such as location, capacity, price, and amenities.",
+        "data": {
+          "attempts": [
+            {
+              "party_size": 50,
+              "budget_max_gbp": 1000
+            },
+            {
+              "party_size": 20,
+              "budget_max_gbp": 1000
+            },
+            {
+              "party_size": 10,
+              "budget_max_gbp": 1000
+            }
+          ],
+          "results": []
+        }
+      },
+      "success": true,
+      "summary": "handoff to structured half: Unable to retrieve any venues despite multiple search attempts with varying party sizes.",
+      "requires_human_approval": false
+    }
+  ],
+  "turns_used": 4,
+  "handoff_requested": true,
+  "handoff_payload": {
+    "reason": "Unable to retrieve any venues despite multiple search attempts with varying party sizes.",
+    "context": "Research and compile a list of Edinburgh venues with key details such as location, capacity, price, and amenities.",
+    "data": {
+      "attempts": [
+        {
+          "party_size": 50,
+          "budget_max_gbp": 1000
+        },
+        {
+          "party_size": 20,
+          "budget_max_gbp": 1000
+        },
+        {
+          "party_size": 10,
+          "budget_max_gbp": 1000
+        }
+      ],
+      "results": []
+    }
+  }
+}

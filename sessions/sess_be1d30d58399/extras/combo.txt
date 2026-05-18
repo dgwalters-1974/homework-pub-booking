@@ -1,0 +1,5 @@
+combo=combo1
+planner=Qwen/Qwen3-Next-80B-A3B-Thinking
+executor=Qwen/Qwen3-235B-A22B-Instruct-2507
+wall_clock_s=30.72
+exit_code=1

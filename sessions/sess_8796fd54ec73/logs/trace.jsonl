@@ -1,0 +1,1 @@
+{"event_type": "planner.called", "actor": "default", "timestamp": "2026-05-18T16:09:18.427926+00:00", "payload": {"task_preview": "Research an Edinburgh pub and produce an HTML event flyer.\n\nContext:\n  - party size: 6\n  - date: 2026-04-25 (a Saturday)\n  - time: 19:30\n  - area: near Haymarket station, Edinburgh\n\nREQUIRED tool sequ"}}

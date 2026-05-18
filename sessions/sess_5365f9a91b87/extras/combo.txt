@@ -1,0 +1,5 @@
+combo=combo3
+planner=Qwen/Qwen3-32B
+executor=Qwen/Qwen3-32B
+wall_clock_s=110.49
+exit_code=1

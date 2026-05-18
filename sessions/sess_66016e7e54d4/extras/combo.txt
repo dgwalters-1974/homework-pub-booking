@@ -1,0 +1,8 @@
+combo=combo1-slide
+planner=Qwen/Qwen3-Next-80B-A3B-Thinking
+executor=Qwen/Qwen3-235B-A22B-Instruct-2507
+rich_task=0
+task_str_override=1
+wall_clock_s=29.64
+exit_code=1
+task_string='Sort the pub for tonight. 160 people, vegan options, quiet corner for a webinar segment. Deposit max £300. Confirm by 5 PM.'

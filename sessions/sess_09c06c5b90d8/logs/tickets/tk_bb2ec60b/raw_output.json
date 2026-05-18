@@ -1,0 +1,50 @@
+{
+  "subgoal_id": "sg_1",
+  "success": true,
+  "final_answer": "I attempted to search for venues in multiple areas of Edinburgh (city centre, Old Town, New Town), but no results were returned. Due to system constraints, I cannot perform additional searches.\n\nWithout any venue data, I cannot identify venue name, location, capacity, amenities, or contact info.\n\nI recommend handing off to the structured agent to reassess the approach or provide updated search parameters.",
+  "tool_calls_made": [
+    {
+      "name": "venue_search",
+      "arguments": {
+        "near": "Edinburgh",
+        "party_size": 50
+      },
+      "success": true,
+      "summary": "venue_search(near=Edinburgh, party_size=50, budget_max_gbp=1000): 0 result(s)",
+      "requires_human_approval": false
+    },
+    {
+      "name": "venue_search",
+      "arguments": {
+        "near": "city centre",
+        "party_size": 50
+      },
+      "success": true,
+      "summary": "venue_search(near=city centre, party_size=50, budget_max_gbp=1000): 0 result(s)",
+      "requires_human_approval": false
+    },
+    {
+      "name": "venue_search",
+      "arguments": {
+        "near": "Old Town",
+        "party_size": 50
+      },
+      "success": true,
+      "summary": "venue_search(near=Old Town, party_size=50, budget_max_gbp=1000): 0 result(s)",
+      "requires_human_approval": false
+    },
+    {
+      "name": "venue_search",
+      "arguments": {
+        "near": "New Town",
+        "party_size": 50
+      },
+      "success": false,
+      "summary": "STOP calling venue_search; use the results you already have.",
+      "requires_human_approval": false
+    }
+  ],
+  "turns_used": 5,
+  "handoff_requested": false,
+  "handoff_payload": null
+}

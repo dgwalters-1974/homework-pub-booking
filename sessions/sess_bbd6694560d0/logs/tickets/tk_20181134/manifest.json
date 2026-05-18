@@ -1,0 +1,20 @@
+{
+  "ticket_id": "tk_20181134",
+  "operation": "executor.run_subgoal/sg_1",
+  "started_at": "2026-05-18T16:08:15.619921+00:00",
+  "completed_at": "2026-05-18T16:08:17.497292+00:00",
+  "duration_ms": 1877,
+  "outputs": [
+    {
+      "path": "/Users/dgwalters/Library/Application Support/sovereign-agent/examples/ex5-edinburgh-research/sess_bbd6694560d0/logs/tickets/tk_20181134/raw_output.json",
+      "sha256": "f03b8fc0424c8ea2ee4cf864b81d7e663b9a82bbe2e909f47b7fc433b953233b",
+      "size_bytes": 820,
+      "content_type": "application/json"
+    }
+  ],
+  "metrics": {
+    "tool_calls": 1,
+    "turns_used": 2,
+    "handoff_requested": false
+  }
+}

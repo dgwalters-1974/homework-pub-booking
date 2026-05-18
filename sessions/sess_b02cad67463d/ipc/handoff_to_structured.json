@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "from_half": "loop",
+  "to_half": "structured",
+  "written_at": "2026-05-18T14:45:45.674113+00:00",
+  "session_id": "sess_b02cad67463d",
+  "reason": "Request venue search parameters (area, party size, budget)",
+  "context": "Research Edinburgh venue details for flyer",
+  "data": {
+    "required_fields": [
+      "near",
+      "party_size"
+    ],
+    "optional_fields": [
+      "budget_max_gbp"
+    ]
+  },
+  "return_instructions": ""
+}

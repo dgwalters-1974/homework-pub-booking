@@ -1,0 +1,43 @@
+{
+  "subgoal_id": "sg_1",
+  "success": true,
+  "final_answer": "(handoff requested)",
+  "tool_calls_made": [
+    {
+      "name": "venue_search",
+      "arguments": {
+        "near": "Edinburgh",
+        "party_size": 160
+      },
+      "success": true,
+      "summary": "venue_search(near=Edinburgh, party_size=160, budget_max_gbp=1000): 0 result(s)",
+      "requires_human_approval": false
+    },
+    {
+      "name": "handoff_to_structured",
+      "arguments": {
+        "reason": "No venues found for 160 people in Edinburgh",
+        "context": "Unable to confirm pub capacity for 160 and quiet area for webinar",
+        "data": {
+          "party_size": 160,
+          "location": "Edinburgh",
+          "need_quiet_area": true
+        }
+      },
+      "success": true,
+      "summary": "handoff to structured half: No venues found for 160 people in Edinburgh",
+      "requires_human_approval": false
+    }
+  ],
+  "turns_used": 2,
+  "handoff_requested": true,
+  "handoff_payload": {
+    "reason": "No venues found for 160 people in Edinburgh",
+    "context": "Unable to confirm pub capacity for 160 and quiet area for webinar",
+    "data": {
+      "party_size": 160,
+      "location": "Edinburgh",
+      "need_quiet_area": true
+    }
+  }
+}

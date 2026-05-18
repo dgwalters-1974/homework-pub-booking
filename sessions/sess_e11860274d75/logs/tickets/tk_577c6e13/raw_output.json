@@ -1,0 +1,22 @@
+[
+  {
+    "id": "sg_1",
+    "description": "Research and select a suitable Edinburgh venue, gathering key details such as location, capacity, amenities, and pricing.",
+    "success_criterion": "A confirmed venue with all required details documented in a structured format.",
+    "estimated_tool_calls": 2,
+    "depends_on": [],
+    "assigned_half": "loop",
+    "status": "pending"
+  },
+  {
+    "id": "sg_2",
+    "description": "Draft the flyer content using the selected venue's details, including event title, venue features, and contact information.",
+    "success_criterion": "A complete flyer draft with all necessary sections and accurate venue information.",
+    "estimated_tool_calls": 1,
+    "depends_on": [
+      "sg_1"
+    ],
+    "assigned_half": "loop",
+    "status": "pending"
+  }
+]

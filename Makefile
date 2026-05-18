@@ -286,6 +286,33 @@ ex5: ## Run Ex5 (Edinburgh research) in offline FakeLLMClient mode
 ex5-real: ## Run Ex5 against the real Nebius LLM (uses tokens!)
 	@$(UV) run python -m starter.edinburgh_research.run --real
 
+# ── Ex5 Task C — three-model comparison ─────────────────────────────────
+# Each combo run sets PLANNER/EXECUTOR model env vars, runs the scenario,
+# copies the resulting session into ./sessions/ with an extras/combo.txt
+# marker. Repeat each combo target 3× to build the sample for the table.
+
+.PHONY: ex5-compare-combo1
+ex5-compare-combo1: ## Combo 1: Qwen3-Next-80B-Thinking + Qwen3-235B-Instruct
+	@$(UV) run python scripts/ex5_compare_run.py combo1
+
+.PHONY: ex5-compare-combo2
+ex5-compare-combo2: ## Combo 2: MiniMax-M2.5 + Qwen3-235B-Instruct
+	@$(UV) run python scripts/ex5_compare_run.py combo2
+
+.PHONY: ex5-compare-combo3
+ex5-compare-combo3: ## Combo 3: Qwen3-32B alone (too-small control)
+	@$(UV) run python scripts/ex5_compare_run.py combo3
+
+.PHONY: ex5-compare-all
+ex5-compare-all: ## Run all three combos once (sequential)
+	@$(MAKE) ex5-compare-combo1
+	@$(MAKE) ex5-compare-combo2
+	@$(MAKE) ex5-compare-combo3
+
+.PHONY: ex5-compare-analysis
+ex5-compare-analysis: ## Build the markdown table from sessions/extras/combo.txt markers
+	@$(UV) run python scripts/ex5_model_compare.py
+
 .PHONY: ex6
 ex6: ## Ex6 (mock) — offline Rasa mock, no setup needed (tier 1)
 	@$(UV) run python -m starter.rasa_half.run

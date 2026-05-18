@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "from_half": "loop",
+  "to_half": "structured",
+  "written_at": "2026-05-18T14:46:44.744463+00:00",
+  "session_id": "sess_61d26231d8eb",
+  "reason": "Venue search returned no results for multiple locations/party sizes. Need more specific criteria or user confirmation.",
+  "context": "Research Edinburgh venue details including name, location, capacity, and amenities",
+  "data": {
+    "attempts": [
+      {
+        "near": "Edinburgh City Centre",
+        "party_size": 10
+      },
+      {
+        "near": "Old Town",
+        "party_size": 20
+      }
+    ]
+  },
+  "return_instructions": ""
+}

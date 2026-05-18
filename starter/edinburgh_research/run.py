@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import sys
 
 from sovereign_agent._internal.llm_client import (
@@ -196,28 +197,29 @@ async def run_scenario(real: bool) -> int:
     clear_log()
 
     with example_sessions_dir("ex5-edinburgh-research", persist=True) as sessions_root:
+        rich_task = (
+            "Research an Edinburgh pub and produce an HTML event flyer.\n\n"
+            "Context:\n"
+            "  - party size: 6\n"
+            "  - date: 2026-04-25 (a Saturday)\n"
+            "  - time: 19:30\n"
+            "  - area: near Haymarket station, Edinburgh\n\n"
+            "REQUIRED tool sequence (all four tools MUST run, in order):\n"
+            "  1. venue_search(near='Haymarket', party_size=6, budget_max_gbp=800)\n"
+            "  2. get_weather(city='edinburgh', date='2026-04-25')\n"
+            "  3. calculate_cost(venue_id=<chosen pub's id>, party_size=6,\n"
+            "                    duration_hours=3, catering_tier='bar_snacks')\n"
+            "  4. generate_flyer(event_details={...})  <-- MUST be called\n"
+            "  5. complete_task(result={'flyer': 'workspace/flyer.html', ...})\n\n"
+            "Do NOT call complete_task until you have called generate_flyer. "
+            "The scenario is graded by the existence of workspace/flyer.html, "
+            "not by your final text response. The flyer is HTML — exact tool "
+            "names and argument shapes are in each tool's docstring; call them "
+            "exactly as described."
+        )
         session = create_session(
             scenario="edinburgh-research",
-            task=(
-                "Research an Edinburgh pub and produce an HTML event flyer.\n\n"
-                "Context:\n"
-                "  - party size: 6\n"
-                "  - date: 2026-04-25 (a Saturday)\n"
-                "  - time: 19:30\n"
-                "  - area: near Haymarket station, Edinburgh\n\n"
-                "REQUIRED tool sequence (all four tools MUST run, in order):\n"
-                "  1. venue_search(near='Haymarket', party_size=6, budget_max_gbp=800)\n"
-                "  2. get_weather(city='edinburgh', date='2026-04-25')\n"
-                "  3. calculate_cost(venue_id=<chosen pub's id>, party_size=6,\n"
-                "                    duration_hours=3, catering_tier='bar_snacks')\n"
-                "  4. generate_flyer(event_details={...})  <-- MUST be called\n"
-                "  5. complete_task(result={'flyer': 'workspace/flyer.html', ...})\n\n"
-                "Do NOT call complete_task until you have called generate_flyer. "
-                "The scenario is graded by the existence of workspace/flyer.html, "
-                "not by your final text response. The flyer is HTML — exact tool "
-                "names and argument shapes are in each tool's docstring; call them "
-                "exactly as described."
-            ),
+            task=rich_task,
             sessions_dir=sessions_root,
         )
         print(f"Session {session.session_id}")
@@ -247,7 +249,18 @@ async def run_scenario(real: bool) -> int:
             executor=DefaultExecutor(model=executor_model, client=client, tools=tools),  # type: ignore[arg-type]
         )
 
-        result = await half.run(session, {"task": "research Edinburgh venue and write flyer"})
+        # Default: the bare one-liner the framework's LoopHalf actually reads.
+        # Set EX5_RICH_TASK=1 to feed the rich `rich_task` string into the
+        # planner instead — control experiment for Task C addendum (Bug 4).
+        # Set EX5_TASK_STR=<string> to feed an arbitrary scenario verbatim
+        # (used for the slide-scenario probe in the Task C addendum).
+        # EX5_TASK_STR takes precedence over EX5_RICH_TASK if both are set.
+        planner_input = os.environ.get("EX5_TASK_STR") or (
+            rich_task
+            if os.environ.get("EX5_RICH_TASK")
+            else "research Edinburgh venue and write flyer"
+        )
+        result = await half.run(session, {"task": planner_input})
         print(f"\nLoop half outcome: {result.next_action}")
         print(f"  summary: {result.summary}")
 

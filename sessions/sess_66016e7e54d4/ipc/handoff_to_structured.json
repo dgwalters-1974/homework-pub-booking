@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "from_half": "loop",
+  "to_half": "structured",
+  "written_at": "2026-05-18T16:52:52.210431+00:00",
+  "session_id": "sess_66016e7e54d4",
+  "reason": "No venues found for 160 people in Edinburgh",
+  "context": "Unable to confirm pub capacity for 160 and quiet area for webinar",
+  "data": {
+    "party_size": 160,
+    "location": "Edinburgh",
+    "need_quiet_area": true
+  },
+  "return_instructions": ""
+}

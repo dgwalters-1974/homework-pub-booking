@@ -1,0 +1,6 @@
+combo=combo1-rich
+planner=Qwen/Qwen3-Next-80B-A3B-Thinking
+executor=Qwen/Qwen3-235B-A22B-Instruct-2507
+rich_task=1
+wall_clock_s=58.55
+exit_code=1

@@ -1,0 +1,117 @@
+{
+  "subgoal_id": "sg_1",
+  "success": true,
+  "final_answer": "(handoff requested)",
+  "tool_calls_made": [
+    {
+      "name": "venue_search",
+      "arguments": {
+        "near": "Edinburgh",
+        "party_size": 50,
+        "budget_max_gbp": 1000
+      },
+      "success": true,
+      "summary": "venue_search(near=Edinburgh, party_size=50, budget_max_gbp=1000): 0 result(s)",
+      "requires_human_approval": false
+    },
+    {
+      "name": "venue_search",
+      "arguments": {
+        "near": "city center",
+        "party_size": 50,
+        "budget_max_gbp": 1500
+      },
+      "success": true,
+      "summary": "venue_search(near=city center, party_size=50, budget_max_gbp=1500): 0 result(s)",
+      "requires_human_approval": false
+    },
+    {
+      "name": "venue_search",
+      "arguments": {
+        "near": "Old Town",
+        "party_size": 50,
+        "budget_max_gbp": 2000
+      },
+      "success": true,
+      "summary": "venue_search(near=Old Town, party_size=50, budget_max_gbp=2000): 0 result(s)",
+      "requires_human_approval": false
+    },
+    {
+      "name": "venue_search",
+      "arguments": {
+        "near": "New Town",
+        "party_size": 50,
+        "budget_max_gbp": 2500
+      },
+      "success": false,
+      "summary": "STOP calling venue_search; use the results you already have.",
+      "requires_human_approval": false
+    },
+    {
+      "name": "handoff_to_structured",
+      "arguments": {
+        "reason": "No venues found after multiple searches with increasing budget and central locations",
+        "context": "Unable to satisfy subgoal due to lack of venue search results",
+        "data": {
+          "search_attempts": [
+            {
+              "near": "Edinburgh",
+              "party_size": 50,
+              "budget_max_gbp": 1000
+            },
+            {
+              "near": "city center",
+              "party_size": 50,
+              "budget_max_gbp": 1500
+            },
+            {
+              "near": "Old Town",
+              "party_size": 50,
+              "budget_max_gbp": 2000
+            },
+            {
+              "near": "New Town",
+              "party_size": 50,
+              "budget_max_gbp": 2500
+            }
+          ],
+          "results_count": 0
+        }
+      },
+      "success": true,
+      "summary": "handoff to structured half: No venues found after multiple searches with increasing budget and central locations",
+      "requires_human_approval": false
+    }
+  ],
+  "turns_used": 5,
+  "handoff_requested": true,
+  "handoff_payload": {
+    "reason": "No venues found after multiple searches with increasing budget and central locations",
+    "context": "Unable to satisfy subgoal due to lack of venue search results",
+    "data": {
+      "search_attempts": [
+        {
+          "near": "Edinburgh",
+          "party_size": 50,
+          "budget_max_gbp": 1000
+        },
+        {
+          "near": "city center",
+          "party_size": 50,
+          "budget_max_gbp": 1500
+        },
+        {
+          "near": "Old Town",
+          "party_size": 50,
+          "budget_max_gbp": 2000
+        },
+        {
+          "near": "New Town",
+          "party_size": 50,
+          "budget_max_gbp": 2500
+        }
+      ],
+      "results_count": 0
+    }
+  }
+}

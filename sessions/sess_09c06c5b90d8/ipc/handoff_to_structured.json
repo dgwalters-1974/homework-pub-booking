@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "from_half": "loop",
+  "to_half": "structured",
+  "written_at": "2026-05-18T14:42:26.535726+00:00",
+  "session_id": "sess_09c06c5b90d8",
+  "reason": "Missing venue and event details required to generate flyer",
+  "context": "Unable to retrieve venue details or prior files; flyer cannot be generated without core event information",
+  "data": {},
+  "return_instructions": ""
+}

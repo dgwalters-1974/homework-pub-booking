@@ -1,0 +1,20 @@
+{
+  "subgoal_id": "sg_2",
+  "success": true,
+  "final_answer": "Weather forecast for Edinburgh on 2026-04-25: cloudy, 12\u00b0C, 0.0mm precipitation, wind 15kph. Success criterion met.",
+  "tool_calls_made": [
+    {
+      "name": "get_weather",
+      "arguments": {
+        "city": "Edinburgh",
+        "date": "2026-04-25"
+      },
+      "success": true,
+      "summary": "get_weather(city=Edinburgh, date=2026-04-25): cloudy, 12C, 0.0mm, 15kph",
+      "requires_human_approval": false
+    }
+  ],
+  "turns_used": 2,
+  "handoff_requested": false,
+  "handoff_payload": null
+}

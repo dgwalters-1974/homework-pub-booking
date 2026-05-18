@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "from_half": "loop",
+  "to_half": "structured",
+  "written_at": "2026-05-18T14:43:10.331307+00:00",
+  "session_id": "sess_917eaa9a4337",
+  "reason": "Missing venue details for flyer creation",
+  "context": "Flyer cannot be written without venue information",
+  "data": {
+    "required_file": "venue_details.json",
+    "current_workspace_empty": true
+  },
+  "return_instructions": ""
+}

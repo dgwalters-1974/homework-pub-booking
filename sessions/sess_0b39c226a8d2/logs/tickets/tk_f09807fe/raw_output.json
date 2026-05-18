@@ -1,0 +1,55 @@
+[
+  {
+    "id": "sg_1",
+    "description": "Search for pubs near Haymarket station that accommodate 6 people within \u00a3800 budget",
+    "success_criterion": "Receive list of venue options with IDs and details",
+    "estimated_tool_calls": 1,
+    "depends_on": [],
+    "assigned_half": "loop",
+    "status": "pending"
+  },
+  {
+    "id": "sg_2",
+    "description": "Get weather forecast for Edinburgh on 2026-04-25",
+    "success_criterion": "Receive weather data for the event date",
+    "estimated_tool_calls": 1,
+    "depends_on": [],
+    "assigned_half": "loop",
+    "status": "pending"
+  },
+  {
+    "id": "sg_3",
+    "description": "Calculate total cost for chosen venue with 6 people, 3 hours, bar snacks catering",
+    "success_criterion": "Receive cost breakdown from venue",
+    "estimated_tool_calls": 1,
+    "depends_on": [
+      "sg_1"
+    ],
+    "assigned_half": "loop",
+    "status": "pending"
+  },
+  {
+    "id": "sg_4",
+    "description": "Generate HTML event flyer with venue, weather, cost, and event details",
+    "success_criterion": "HTML file created at workspace/flyer.html",
+    "estimated_tool_calls": 1,
+    "depends_on": [
+      "sg_1",
+      "sg_2",
+      "sg_3"
+    ],
+    "assigned_half": "structured",
+    "status": "pending"
+  },
+  {
+    "id": "sg_5",
+    "description": "Complete the task with flyer location and summary",
+    "success_criterion": "Task marked as complete with result",
+    "estimated_tool_calls": 1,
+    "depends_on": [
+      "sg_4"
+    ],
+    "assigned_half": "structured",
+    "status": "pending"
+  }
+]

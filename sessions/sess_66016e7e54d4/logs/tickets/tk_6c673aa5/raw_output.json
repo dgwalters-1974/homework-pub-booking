@@ -1,0 +1,45 @@
+[
+  {
+    "id": "sg_1",
+    "description": "Confirm pub can accommodate 160 people and has a quiet corner for the webinar segment",
+    "success_criterion": "Pub confirms capacity and space allocation for 160 people and quiet area",
+    "estimated_tool_calls": 1,
+    "depends_on": [],
+    "assigned_half": "loop",
+    "status": "pending"
+  },
+  {
+    "id": "sg_2",
+    "description": "Arrange vegan menu options with the pub's catering service",
+    "success_criterion": "Vegan menu confirmed and cost details provided",
+    "estimated_tool_calls": 1,
+    "depends_on": [
+      "sg_1"
+    ],
+    "assigned_half": "loop",
+    "status": "pending"
+  },
+  {
+    "id": "sg_3",
+    "description": "Calculate total deposit amount to ensure it does not exceed \u00a3300",
+    "success_criterion": "Total deposit calculated and confirmed \u2264 \u00a3300",
+    "estimated_tool_calls": 1,
+    "depends_on": [
+      "sg_1",
+      "sg_2"
+    ],
+    "assigned_half": "loop",
+    "status": "pending"
+  },
+  {
+    "id": "sg_4",
+    "description": "Send confirmation of all arrangements to stakeholders before 5 PM",
+    "success_criterion": "Confirmation email sent and received by all parties before 5 PM",
+    "estimated_tool_calls": 1,
+    "depends_on": [
+      "sg_3"
+    ],
+    "assigned_half": "loop",
+    "status": "pending"
+  }
+]

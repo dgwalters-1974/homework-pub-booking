@@ -1,0 +1,6 @@
+combo=combo3-rich
+planner=Qwen/Qwen3-32B
+executor=Qwen/Qwen3-32B
+rich_task=1
+wall_clock_s=118.12
+exit_code=1

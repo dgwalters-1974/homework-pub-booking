@@ -1,0 +1,21 @@
+{
+  "subgoal_id": "sg_1",
+  "success": true,
+  "final_answer": "The search for pubs near Haymarket station that accommodate 6 people within an \u00a3800 budget returned no results. \n\nWould you like me to expand the search area, adjust the budget, or try a different venue type?",
+  "tool_calls_made": [
+    {
+      "name": "venue_search",
+      "arguments": {
+        "near": "Haymarket station",
+        "party_size": 6,
+        "budget_max_gbp": 800
+      },
+      "success": true,
+      "summary": "venue_search(near=Haymarket station, party_size=6, budget_max_gbp=800): 0 result(s)",
+      "requires_human_approval": false
+    }
+  ],
+  "turns_used": 2,
+  "handoff_requested": false,
+  "handoff_payload": null
+}

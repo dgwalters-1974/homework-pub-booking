@@ -1,0 +1,22 @@
+[
+  {
+    "id": "sg_1",
+    "description": "Research Edinburgh venue details (name, location, capacity, amenities)",
+    "success_criterion": "Venue information is compiled with key details for flyer use",
+    "estimated_tool_calls": 3,
+    "depends_on": [],
+    "assigned_half": "loop",
+    "status": "pending"
+  },
+  {
+    "id": "sg_2",
+    "description": "Write and format flyer content using researched venue information",
+    "success_criterion": "Completed flyer draft with event details, venue info, and call-to-action",
+    "estimated_tool_calls": 2,
+    "depends_on": [
+      "sg_1"
+    ],
+    "assigned_half": "loop",
+    "status": "pending"
+  }
+]

@@ -1,0 +1,5 @@
+combo=combo2
+planner=MiniMaxAI/MiniMax-M2.5
+executor=Qwen/Qwen3-235B-A22B-Instruct-2507
+wall_clock_s=38.62
+exit_code=1
