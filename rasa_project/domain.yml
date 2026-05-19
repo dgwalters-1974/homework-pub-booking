@@ -30,6 +30,14 @@ slots:
     initial_value: 3
     mappings:
       - type: from_llm
+  vegan_ratio:
+    type: float
+    mappings:
+      - type: controlled
+  policy_profile:
+    type: text
+    mappings:
+      - type: controlled
   validation_error:
     type: text
     mappings:

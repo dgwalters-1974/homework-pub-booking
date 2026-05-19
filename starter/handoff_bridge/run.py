@@ -1,9 +1,25 @@
-"""Ex7 — reference solution runner. Scripts a two-round round-trip:
-round 1: loop picks haymarket_tap (8 seats), structured rejects (party=12 > cap=8)
-round 2: loop picks royal_oak (16 seats), structured accepts."""
+"""Ex7 — reference solution runner.
+
+Default profile (the original Ex7 scenario):
+  round 1: loop picks haymarket_tap, structured rejects (party=12 > cap=8)
+  round 2: loop picks royal_oak, scaled-down party, structured accepts.
+
+Slide profile (--profile slide, added for the Nebius Academy alt scenario):
+  round 1: loop hands off a 160-person booking with vegan_ratio=0.9; the
+           slide-policy validator rejects on vegan_ratio_too_high (a rule
+           that only exists under the slide profile — party_size=160 is
+           under the 170 cap, so this proves a slide-specific rule fired).
+  round 2: loop fixes the menu (vegan_ratio=0.5) and resubmits; structured
+           accepts.
+
+The slide path is what end-to-end verifies that the new `policy_profile`
+field threads through `handoff_to_structured` → bridge → RasaStructuredHalf
+→ normaliser → validator without being stripped along the way.
+"""
 
 from __future__ import annotations
 
+import argparse
 import asyncio
 import json
 import sys
@@ -25,8 +41,7 @@ from starter.rasa_half.structured_half import RasaStructuredHalf, spawn_mock_ras
 
 
 def _build_fake_client_two_rounds() -> FakeLLMClient:
-    """Round 1: plan → venue_search → handoff_to_structured (haymarket_tap)
-    Round 2: plan → venue_search → handoff_to_structured (royal_oak)"""
+    """Default profile: round 1 reject on party_too_large, round 2 accept."""
     plan_r1 = json.dumps(
         [
             {
@@ -121,15 +136,136 @@ def _build_fake_client_two_rounds() -> FakeLLMClient:
     )
 
 
-async def run_scenario(real: bool) -> int:
-    with example_sessions_dir("ex7-handoff-bridge", persist=True) as sessions_root: # persist amended to preserve trace
+def _build_fake_client_slide() -> FakeLLMClient:
+    """Slide profile: round 1 reject on vegan_ratio_too_high, round 2 accept.
+
+    The vegan_ratio rejection is slide-specific — under the default policy
+    that rule isn't enforced, so a positive outcome here is direct evidence
+    that policy_profile threaded all the way through to the validator.
+    """
+    plan_r1 = json.dumps(
+        [
+            {
+                "id": "sg_1",
+                "description": "find venue for 160-person webinar event near Haymarket with vegan options",
+                "success_criterion": "candidate identified, deposit within budget",
+                "estimated_tool_calls": 2,
+                "depends_on": [],
+                "assigned_half": "loop",
+            }
+        ]
+    )
+    plan_r2 = json.dumps(
+        [
+            {
+                "id": "sg_1",
+                "description": "renegotiate menu to bring vegan share under the cap",
+                "success_criterion": "lower vegan_ratio with same venue",
+                "estimated_tool_calls": 1,
+                "depends_on": [],
+                "assigned_half": "loop",
+            }
+        ]
+    )
+
+    return FakeLLMClient(
+        [
+            # === ROUND 1 — vegan_ratio=0.9 will be rejected ===
+            ScriptedResponse(content=plan_r1),
+            ScriptedResponse(
+                tool_calls=[
+                    ToolCall(
+                        id="c1",
+                        name="venue_search",
+                        arguments={
+                            "near": "Haymarket",
+                            "party_size": 160,
+                            "budget_max_gbp": 2000,
+                        },
+                    )
+                ]
+            ),
+            ScriptedResponse(
+                tool_calls=[
+                    ToolCall(
+                        id="c2",
+                        name="handoff_to_structured",
+                        arguments={
+                            "reason": "loop half identified a 160-person candidate venue; passing for slide-policy confirmation",
+                            "context": "party of 160 near Haymarket on 2026-05-19 17:00; vegan-heavy menu proposed",
+                            "data": {
+                                "action": "confirm_booking",
+                                "venue_id": "Haymarket Tap",
+                                "date": "2026-05-19",
+                                "time": "17:00",
+                                "party_size": "160",
+                                "deposit": "£300",
+                                "vegan_ratio": 0.9,
+                                "policy_profile": "slide",
+                            },
+                        },
+                    )
+                ]
+            ),
+            # === ROUND 2 — vegan_ratio dropped to 0.5; should accept ===
+            ScriptedResponse(content=plan_r2),
+            ScriptedResponse(
+                tool_calls=[
+                    ToolCall(
+                        id="c3",
+                        name="venue_search",
+                        arguments={
+                            "near": "Haymarket",
+                            "party_size": 160,
+                            "budget_max_gbp": 2000,
+                        },
+                    )
+                ]
+            ),
+            ScriptedResponse(
+                tool_calls=[
+                    ToolCall(
+                        id="c4",
+                        name="handoff_to_structured",
+                        arguments={
+                            "reason": "retry with renegotiated menu — vegan share now 50%",
+                            "context": "same venue and party size; vegan_ratio reduced from 0.9 to 0.5 to satisfy slide policy",
+                            "data": {
+                                "action": "confirm_booking",
+                                "venue_id": "Haymarket Tap",
+                                "date": "2026-05-19",
+                                "time": "17:00",
+                                "party_size": "160",
+                                "deposit": "£300",
+                                "vegan_ratio": 0.5,
+                                "policy_profile": "slide",
+                            },
+                        },
+                    )
+                ]
+            ),
+        ]
+    )
+
+
+async def run_scenario(real: bool, profile: str) -> int:
+    with example_sessions_dir(
+        "ex7-handoff-bridge", persist=True
+    ) as sessions_root:  # persist amended to preserve trace
+        if profile == "slide":
+            initial_task = "book a 160-person webinar venue near Haymarket on 2026-05-19, vegan options"
+            scenario_label = "ex7-handoff-bridge-slide"
+        else:
+            initial_task = "book for party of 12 in Haymarket"
+            scenario_label = "ex7-handoff-bridge"
         session = create_session(
-            scenario="ex7-handoff-bridge",
-            task="Book a venue for 12 people in Haymarket, Friday 19:30.",
+            scenario=scenario_label,
+            task=initial_task,
             sessions_dir=sessions_root,
         )
         print(f"Session {session.session_id}")
         print(f"  dir: {session.directory}")
+        print(f"  profile: {profile}")
 
         # Spawn mock Rasa unless --real
         server = None
@@ -139,7 +275,7 @@ async def run_scenario(real: bool) -> int:
         else:
             rasa_half = RasaStructuredHalf()
 
-        client = _build_fake_client_two_rounds()
+        client = _build_fake_client_slide() if profile == "slide" else _build_fake_client_two_rounds()
         tools = build_tool_registry(session)
         loop_half = LoopHalf(
             planner=DefaultPlanner(model="fake", client=client),
@@ -152,7 +288,7 @@ async def run_scenario(real: bool) -> int:
         )
 
         try:
-            result = await bridge.run(session, {"task": "book for party of 12 in Haymarket"})
+            result = await bridge.run(session, {"task": initial_task})
         finally:
             if server is not None:
                 server.shutdown()
@@ -164,8 +300,22 @@ async def run_scenario(real: bool) -> int:
 
 
 def main() -> None:
-    real = "--real" in sys.argv
-    sys.exit(asyncio.run(run_scenario(real=real)))
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--real",
+        action="store_true",
+        help="Hit a live Rasa server instead of the stdlib mock.",
+    )
+    parser.add_argument(
+        "--profile",
+        choices=("default", "slide"),
+        default="default",
+        help="Bridge scenario profile. 'default' = the original party_too_large "
+        "round-trip; 'slide' = a vegan_ratio_too_high round-trip that exercises "
+        "the slide-policy rules end-to-end through the bridge.",
+    )
+    args = parser.parse_args()
+    sys.exit(asyncio.run(run_scenario(real=args.real, profile=args.profile)))
 
 
 if __name__ == "__main__":

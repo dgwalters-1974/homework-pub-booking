@@ -31,6 +31,8 @@ from sovereign_agent.halves import HalfResult
 from sovereign_agent.halves.structured import StructuredHalf
 from sovereign_agent.session.directory import Session
 
+from starter.rasa_half.memory import write_booking_memory
+from starter.rasa_half.policies import lookup as lookup_policy
 from starter.rasa_half.validator import normalise_booking_payload
 
 RASA_REST_WEBHOOK_DEFAULT = "http://localhost:5005/webhooks/rest/webhook"
@@ -93,11 +95,18 @@ class RasaStructuredHalf(StructuredHalf):
             )
 
         booking = rasa_msg["metadata"]["booking"]
+        # Thread the session directory through metadata so the validator
+        # action (and the mock handler) can write memory/semantic/booking_*.md
+        # under the right session. Keep it OUTSIDE the booking dict — it's
+        # transport state, not booking data.
         body = json.dumps(
             {
                 "sender": rasa_msg["sender"],
                 "message": rasa_msg["message"],
-                "metadata": {"booking": booking},
+                "metadata": {
+                    "booking": booking,
+                    "session_dir": str(session.directory),
+                },
             }
         ).encode("utf-8")
         req = urllib_request.Request(
@@ -422,12 +431,30 @@ class RasaHostLifecycle:
 
 
 class _MockRasaHandler(BaseHTTPRequestHandler):
-    """Stdlib mock of Rasa's REST webhook. Same party/deposit rules
-    as real ActionValidateBooking so the two paths give identical
+    """Stdlib mock of Rasa's REST webhook. Mirrors the real
+    ActionValidateBooking — same policy lookup, same memory write, same
+    rejection codes — so the mock and real paths produce identical
     answers for a given input."""
 
     def log_message(self, fmt, *args):  # noqa: N802
         return
+
+    def _reject(self, reason: str, *, booking: dict, policy, profile_name: str, session_dir):
+        write_booking_memory(
+            session_dir,
+            outcome="rejected",
+            booking=booking,
+            policy=policy,
+            profile_name=profile_name,
+            reference=None,
+            reason=reason,
+        )
+        return [
+            {
+                "text": f"Sorry, we can't accept this booking. Reason: {reason}",
+                "custom": {"action": "rejected", "reason": reason},
+            }
+        ]
 
     def do_POST(self):  # noqa: N802
         length = int(self.headers.get("Content-Length", "0"))
@@ -437,31 +464,54 @@ class _MockRasaHandler(BaseHTTPRequestHandler):
         except Exception:  # noqa: BLE001
             payload = {}
 
-        booking = payload.get("metadata", {}).get("booking", {})
-        party = booking.get("party_size")
-        deposit = booking.get("deposit_gbp", 0)
+        meta = payload.get("metadata", {}) or {}
+        booking = meta.get("booking", {}) or {}
+        session_dir = meta.get("session_dir")
 
+        profile_name = str(booking.get("policy_profile") or "default")
+        policy = lookup_policy(profile_name)
+
+        party = booking.get("party_size")
+        deposit = booking.get("deposit_gbp", 0) or 0
+        vegan_ratio = booking.get("vegan_ratio")
+
+        # Required-field check (party only — matches the original mock contract)
         if not party:
-            response = [
-                {
-                    "text": "Booking rejected (missing party size).",
-                    "custom": {"action": "rejected", "reason": "missing_party_size"},
-                }
-            ]
-        elif party > 8:
-            response = [
-                {
-                    "text": "Sorry, we can't accept this booking. Reason: party_too_large",
-                    "custom": {"action": "rejected", "reason": "party_too_large"},
-                }
-            ]
-        elif deposit > 300:
-            response = [
-                {
-                    "text": "Sorry, we can't accept this booking. Reason: deposit_too_high",
-                    "custom": {"action": "rejected", "reason": "deposit_too_high"},
-                }
-            ]
+            response = self._reject(
+                "missing_party_size",
+                booking=booking,
+                policy=policy,
+                profile_name=profile_name,
+                session_dir=session_dir,
+            )
+        elif party > policy.max_party_size:
+            response = self._reject(
+                "party_too_large",
+                booking=booking,
+                policy=policy,
+                profile_name=profile_name,
+                session_dir=session_dir,
+            )
+        elif deposit > policy.max_deposit_gbp:
+            response = self._reject(
+                "deposit_too_high",
+                booking=booking,
+                policy=policy,
+                profile_name=profile_name,
+                session_dir=session_dir,
+            )
+        elif (
+            policy.max_vegan_ratio is not None
+            and vegan_ratio is not None
+            and float(vegan_ratio) > policy.max_vegan_ratio
+        ):
+            response = self._reject(
+                "vegan_ratio_too_high",
+                booking=booking,
+                policy=policy,
+                profile_name=profile_name,
+                session_dir=session_dir,
+            )
         else:
             ref = (
                 "BK-"
@@ -470,6 +520,15 @@ class _MockRasaHandler(BaseHTTPRequestHandler):
                 )
                 .hexdigest()[:8]
                 .upper()
+            )
+            write_booking_memory(
+                session_dir,
+                outcome="confirmed",
+                booking=booking,
+                policy=policy,
+                profile_name=profile_name,
+                reference=ref,
+                reason=None,
             )
             response = [
                 {

@@ -87,22 +87,43 @@ def normalise_booking_payload(raw: dict) -> dict:
     if catering not in ("drinks_only", "bar_snacks", "sit_down_meal", "three_course_meal"):
         catering = "bar_snacks"
 
+    # Slide-spec additions — both are optional. When absent the validator
+    # treats the booking as the original homework scenario (policy "default",
+    # no vegan accounting).
+    profile = raw.get("policy_profile")
+    profile = str(profile) if profile in ("default", "slide") else "default"
+
+    vegan_ratio_raw = raw.get("vegan_ratio")
+    vegan_ratio: float | None
+    if vegan_ratio_raw is None or vegan_ratio_raw == "":
+        vegan_ratio = None
+    else:
+        try:
+            vegan_ratio = float(vegan_ratio_raw)
+        except (TypeError, ValueError) as e:
+            raise ValidationFailed(f"cannot parse vegan_ratio: {vegan_ratio_raw!r}") from e
+        if not 0.0 <= vegan_ratio <= 1.0:
+            raise ValidationFailed(f"vegan_ratio out of range [0,1]: {vegan_ratio}")
+
     stable_suffix = hashlib.sha1(f"{venue_id}-{date_iso}-{time_24h}".encode()).hexdigest()[:8]
+
+    booking: dict[str, object] = {
+        "venue_id": venue_id,
+        "date": date_iso,
+        "time": time_24h,
+        "party_size": party,
+        "deposit_gbp": deposit,
+        "duration_hours": duration,
+        "catering_tier": catering,
+        "policy_profile": profile,
+    }
+    if vegan_ratio is not None:
+        booking["vegan_ratio"] = vegan_ratio
 
     return {
         "sender": f"homework-{stable_suffix}",
         "message": "/confirm_booking",
-        "metadata": {
-            "booking": {
-                "venue_id": venue_id,
-                "date": date_iso,
-                "time": time_24h,
-                "party_size": party,
-                "deposit_gbp": deposit,
-                "duration_hours": duration,
-                "catering_tier": catering,
-            }
-        },
+        "metadata": {"booking": booking},
     }
 
 
