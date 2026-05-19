@@ -4,7 +4,7 @@
 
 > "Find a point in your Ex7 logs where the planner decided to hand off to the structured half. Quote the planner's reasoning or the specific subgoal's `assigned_half` field. What signal caused the decision?"
 
-### Answer
+### Your answer
 
 In my Ex7 run (`sessions/sess_7adc10a30e4c`), the planner did not assign any subgoal to the structured half. The planner ran twice -once per round — and each call produced a single subgoal with `assigned_half: "loop"`. `session.json` only retains the latest planner state, so `.planner.subgoals` shows just the round-2 subgoal (`sg_1`: "retry with larger venue after rejection"); the round-1 subgoal ("find venue near haymarket for 12") is recoverable from `logs/trace.jsonl` via the two `planner.called` / `planner.produced_subgoals` events.
 
@@ -28,16 +28,16 @@ Looking a bit deeper at this, the planner's `assigned_half` field is just adviso
 
 > "Describe one instance where your Ex5 dataflow integrity check caught something manual inspection missed, OR (if you never saw it trigger) describe a plausible scenario where it WOULD catch a failure that a human reviewer wouldn't. Your scenario must be specific enough that someone else could construct the test case."
 
-### Answer
+### Your answer
 
-The Ex5 offline harness (`make ex5`, session `sessions/sess_2f5bd9478e9b`) delivers a deliberately fabricated flyer - the FakeLLMClient script in `starter/edinburgh_research/run.py` contains `event_details = {"total_gbp": 540, "deposit_required_gbp": 0, ...}`, while `calculate_cost('haymarket_tap', 6, 3, 'bar_snacks')` actually returns `total=556, deposit=111` (independently derivable from `sample_data/catering.json` + `sample_data/venues.json:haymarket_tap`).
+The Ex5 offline harness as originally shipped delivers a deliberately fabricated flyer — the FakeLLMClient script in `starter/edinburgh_research/run.py` *originally* hand-typed `event_details = {"total_gbp": 540, "deposit_required_gbp": 0, ...}`, while `calculate_cost('haymarket_tap', 6, 3, 'bar_snacks')` actually returns `total=556, deposit=111` (independently derivable from `sample_data/catering.json` + `sample_data/venues.json:haymarket_tap`). The committed session `sessions/sess_2f5bd9478e9b/workspace/flyer.html` preserves that fabricated state for inspection.
 
 In the original code, `verify_dataflow` reports "OK" anyway because of two bugs in `integrity.py`:
 
 - **Bug 1** (`integrity.py lines 64-68`): the regex `£\d+` requires `£` adjacent to a digit, but `tools.py:353,357` renders its monetary output as nested `<span>£<span data-testid="...">N</span></span>` tags that become `" £ 540 "` after tag-stripping. The details actually never get extracted at all.
 - **Bug 2** (`integrity.py line 112`): `fact_appears_in_log` scans both `r.output` AND `r.arguments`, so the LLM's hallucinated values self-verify via `generate_flyer`'s own arguments dict — the artefact-builder is marking its own work.
 
-After applying fixes to both these issues(regex changed to `£\s*\d+(?:\.\d+)?`, drop the `or _scan(r.arguments)` clause), `make ex5` exits non-zero with `dataflow FAIL: 1 unverified fact(s): ['£ 540']`. Manual inspection consistently misses this because £540 is a plausible amount — close to the real £556, follows the deposit-policy thresholds that are provided in `catering.json` and renders identically to legitimate values. A human reviewer scanning the rendered flyer will miss this almost every time.
+After applying fixes to both these issues (regex changed to `£\s*\d+(?:\.\d+)?`, drop the `or _scan(r.arguments)` clause) and re-running `make ex5` against the *original* fabricated FakeLLMClient, the harness exits non-zero with `dataflow FAIL: 1 unverified fact(s): ['£ 540']` — the check caught the fabrication. With the integrity machinery working, I then shipped the obvious behavioural fix: update the FakeLLMClient at `run.py:79-95` to use the real tool outputs (`total_gbp=556, deposit_required_gbp=111`), so `make ex5` exits 0 going forward. Manual inspection consistently misses this kind of bug because £540 is a plausible amount — close to the real £556, follows the deposit-policy thresholds in `catering.json`, and renders identically to legitimate values. A human reviewer scanning the rendered flyer will miss this almost every time; the integrity check will not.
 
 The lesson here (also visible in this run) is that integrity checks must verify against tool outputs (i.e. what was *produced*), never the arguments to tools (which are the LLM's claims). Field-aware matching via the unused `extract_testid_facts` helper at `integrity.py:85-96` would also resolve a third issue I documented ('bare-number' collisions on `0`).
 
@@ -57,7 +57,7 @@ The lesson here (also visible in this run) is that integrity checks must verify 
 
 > "If you were shipping this agent to a real pub-booking business next week, what's the first production failure you'd expect, and which sovereign-agent primitive (ticket state machine, manifest discipline, IPC atomic rename, SessionQueue retry, etc.) would surface it? One specific primitive, one specific failure mode."
 
-### Answer
+### Your answer
 
 **Primitive: manifest discipline** (every tool call recorded into `_TOOL_CALL_LOG` via `record_tool_call`, with the rubric's −3pt penalty for any tool that bypasses this).
 **First production failure mode I'd expect: a real LLM violating the task's HARD RULES because they don't reach the executor.**
@@ -104,11 +104,11 @@ Failure modes #2 (`action_validate_booking internal_error`), #3 (`Embeddings 401
 
 > "The dataflow integrity check — did it catch any silent failures in your scenario? If yes, describe the failure and the fix. If no, construct a planted failure (edit a tool to return a fabricated value) and show the check catching it."
 
-**Yes — caught a planted fabrication that's wired into the offline scaffold itself.** The FakeLLMClient script at `starter/edinburgh_research/run.py:79-95` hand-types `event_details={"total_gbp": 540, "deposit_required_gbp": 0, ...}` while the real `calculate_cost('haymarket_tap', 6, 3, 'bar_snacks')` (derivable from `sample_data/catering.json` + `venues.json:haymarket_tap`) returns `total=556, deposit=111`. This is the planted fabrication this question is asking about.
+**Yes — caught a planted fabrication that was wired into the offline scaffold itself.** As originally shipped, the FakeLLMClient script at `starter/edinburgh_research/run.py:79-95` hand-typed `event_details={"total_gbp": 540, "deposit_required_gbp": 0, ...}` while the real `calculate_cost('haymarket_tap', 6, 3, 'bar_snacks')` (derivable from `sample_data/catering.json` + `venues.json:haymarket_tap`) returns `total=556, deposit=111`. That is the planted fabrication.
 
 When I first ran `make ex5` the check reported "OK" anyway — a silent failure of the silent-failure detector. Two bugs in `starter/edinburgh_research/integrity.py`: (a) the regex `£\d+` required `£` adjacent to a digit but the flyer renders monetary values as `<span>£<span>540</span></span>` which becomes `"£ 540"` after tag-stripping; (b) `fact_appears_in_log` scanned both `r.output` and `r.arguments`, so the LLM's hallucinated values self-verified via `generate_flyer`'s own argument dict.
 
-**Fixes shipped**: regex at `integrity.py:69` widened to `£\s*\d+(?:\.\d+)?` (tolerates whitespace); `_scan(r.arguments)` clause dropped at `integrity.py:115` (only tool *outputs* count). After these fixes, `make ex5` now exits non-zero with `dataflow FAIL: 1 unverified fact(s): ['£ 540']` — verified just before this submission. Concrete artefact: `sessions/sess_2f5bd9478e9b/workspace/flyer.html` carries the fabricated values; the same session's `logs/tickets/{tk_844e0ff0,tk_c5b0dbbb,tk_f84530ed}/state.json` all show `"state": "success"`, which is precisely why the integrity check matters — every other primitive in the framework says this run succeeded. The check is the only thing that disagrees.
+**Fixes shipped, in this order**: (1) regex at `integrity.py:69` widened to `£\s*\d+(?:\.\d+)?` (tolerates whitespace); (2) `_scan(r.arguments)` clause dropped at `integrity.py:115` (only tool *outputs* count). With (1) and (2) in place, re-running `make ex5` against the *original* fabricated FakeLLMClient exited non-zero with `dataflow FAIL: 1 unverified fact(s): ['£ 540']` — the check caught the planted failure. (3) The obvious behavioural fix followed: update the FakeLLMClient `event_details` at `run.py:79-95` to use the real tool outputs (`total_gbp=556, deposit_required_gbp=111`) so `make ex5` exits 0 going forward. The committed session `sessions/sess_2f5bd9478e9b/workspace/flyer.html` preserves the original fabricated state; that same session's `logs/tickets/{tk_844e0ff0,tk_c5b0dbbb,tk_f84530ed}/state.json` all show `"state": "success"`, which is precisely why the integrity check matters — every other primitive in the framework says the run succeeded. The check is the only thing that disagreed.
 
 **Memory-persists-across-restart corollary**: the same Q2 logic applies to Ex6's validator memory. After the Ex6 slide work shipped, every booking validation writes a markdown artefact under `memory/semantic/booking_*.md` (`starter/rasa_half/memory.py`). `sessions/sess_31afe581cfc4/memory/semantic/` contains both a round-1 rejection (`booking_e9f1fbd5_vegan_ratio_too_high.md`) and a round-2 confirmation (`booking_BK-A66CC39E.md`) — both written during the run, both still readable now from a fresh shell. The fact that you (or the grader) can `cat` these files from git well after the writing process exited is the load-bearing evidence that the memory primitive persists across restart.
 

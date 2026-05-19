@@ -89,8 +89,8 @@ def _build_fake_client() -> FakeLLMClient:
                 "party_size": 6,
                 "condition": "cloudy",
                 "temperature_c": 12,
-                "total_gbp": 540,
-                "deposit_required_gbp": 0,
+                "total_gbp": 556,
+                "deposit_required_gbp": 111,
             }
         },
     )
