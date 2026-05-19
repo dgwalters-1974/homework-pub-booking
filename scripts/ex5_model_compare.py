@@ -95,7 +95,9 @@ def analyse_session(session_dir: Path) -> dict:
 
     # Tool-call summary from executor.tool_called events
     tool_called_events = [e for e in events if e.get("event_type") == "executor.tool_called"]
-    venue_search_calls = [e for e in tool_called_events if e.get("payload", {}).get("tool") == "venue_search"]
+    venue_search_calls = [
+        e for e in tool_called_events if e.get("payload", {}).get("tool") == "venue_search"
+    ]
     spiral_capped = any(
         (e.get("payload", {}).get("success") is False)
         and "STOP calling venue_search" in str(e.get("payload", {}).get("summary", ""))
@@ -216,7 +218,7 @@ def main() -> int:
         print(
             f"| {combo} ({by_combo[combo][0]['planner']} + {by_combo[combo][0]['executor']}) "
             f"| {agg['runs']} "
-            f"| {agg['success_count']}/{agg['runs']} ({agg['success_rate']*100:.0f}%) "
+            f"| {agg['success_count']}/{agg['runs']} ({agg['success_rate'] * 100:.0f}%) "
             f"| {fmt_int(int(agg['mean_tokens_in']))} / {fmt_int(int(agg['mean_tokens_out']))} "
             f"| {fmt_float(agg['mean_wall_clock_s'])}s "
             f"| {fmt_float(agg['mean_tool_calls'])} "

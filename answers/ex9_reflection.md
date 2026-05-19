@@ -81,3 +81,53 @@ The lesson here is that prompt-level rules are largely decorative and not to be 
 - `.venv/lib/python3.12/site-packages/sovereign_agent/planner/__init__.py:94` — one-sentence-description rule
 - `.venv/lib/python3.12/site-packages/sovereign_agent/executor/__init__.py:225-232` — executor's prompt construction (no original task threaded through)
 - `docs/real-mode-failures.md:51-73` — recommended spiral cap implementation
+
+---
+
+## Addendum (2026-05-19) — slide-version Q1–Q3
+
+The lecture slides circulated a slightly different Q1–Q3 set after I'd written the answers above. Rather than rewrite, I've added the slide versions here. Each ≥100 words, grounded in specific sessions and lines.
+
+### Slide Q1 — Which of yesterday's eight failure modes did you hit in your own build?
+
+> "Which of yesterday's eight failure modes did you hit in your own build? Reference the specific ticket IDs / trace lines."
+
+Three of the eight catalogued in `docs/real-mode-failures.md` were hit during this build:
+
+**1. Ex5 — Qwen3-32B spiral on `venue_search` (`docs/real-mode-failures.md:15-86`).** Hit on `sessions/sess_d15fc62e370f` (real mode, Qwen3-32B planner+executor). `logs/trace.jsonl` shows four `executor.tool_called` events with `tool="venue_search"` and varying parameters (`party_size ∈ {10, 10, 15, 10}`, `near ∈ {"Edinburgh City Centre", "Old Town", "Edinburgh", "Grassmarket"}`). No `generate_flyer` ever fires. Diagnosed in Ex9 Q3 above as planner subgoal compression (`planner/__init__.py:94`). **Fix shipped**: tool-layer spiral cap at `starter/edinburgh_research/tools.py:49-64` reading `_TOOL_CALL_LOG`. Verified by Task C real-mode runs — `sessions/sess_e11860274d75` (combo 1) and similar all hit the cap rather than fanning out indefinitely.
+
+**2. Ex7 — Loop half uses FakeLLMClient even in `--real` (`docs/real-mode-failures.md:186-204`).** Observed at `starter/handoff_bridge/run.py:139-141`: `--real` only swaps `RasaStructuredHalf(rasa_url=mock_url)` for `RasaStructuredHalf()` (real Rasa) — the loop half is still wired to `_build_fake_client_two_rounds()` on line 142. This is acknowledged behaviour in my Ex7 writeup (`answers/ex7_handoff_bridge.md`) and is reflected by every Ex7 session in `sessions/` showing `"model": "fake"` in the planner/executor ticket manifests.
+
+**3. Ex8 — Speechmatics 401 / 403 path (`docs/real-mode-failures.md:232-260`).** Hit as the *graceful-degradation* path — when running `make ex8-voice` without a Speechmatics key set, the pipeline detects the missing credential and falls back to text mode. Captured in `sessions/sess_d4485cc821a5/SESSION.md` and documented at `answers/ex8_voice_pipeline.md:50-62`. The session has no `trace.jsonl` because the run aborts before turn 0 — itself the load-bearing evidence (the integration refuses to silently proceed with broken auth).
+
+Failure modes #2 (`action_validate_booking internal_error`), #3 (`Embeddings 401`), #5 (FakeLLMClient response exhaustion), #7 (Rime TTS 400), and #8 (macOS mic) were not hit — none of those code paths were exercised, either because the implementation didn't go there (Embeddings, Rime) or because the local environment didn't trigger them (mic).
+
+### Slide Q2 — Did the dataflow integrity check catch any silent failures?
+
+> "The dataflow integrity check — did it catch any silent failures in your scenario? If yes, describe the failure and the fix. If no, construct a planted failure (edit a tool to return a fabricated value) and show the check catching it."
+
+**Yes — caught a planted fabrication that's wired into the offline scaffold itself.** The FakeLLMClient script at `starter/edinburgh_research/run.py:79-95` hand-types `event_details={"total_gbp": 540, "deposit_required_gbp": 0, ...}` while the real `calculate_cost('haymarket_tap', 6, 3, 'bar_snacks')` (derivable from `sample_data/catering.json` + `venues.json:haymarket_tap`) returns `total=556, deposit=111`. This is the planted fabrication this question is asking about.
+
+When I first ran `make ex5` the check reported "OK" anyway — a silent failure of the silent-failure detector. Two bugs in `starter/edinburgh_research/integrity.py`: (a) the regex `£\d+` required `£` adjacent to a digit but the flyer renders monetary values as `<span>£<span>540</span></span>` which becomes `"£ 540"` after tag-stripping; (b) `fact_appears_in_log` scanned both `r.output` and `r.arguments`, so the LLM's hallucinated values self-verified via `generate_flyer`'s own argument dict.
+
+**Fixes shipped**: regex at `integrity.py:69` widened to `£\s*\d+(?:\.\d+)?` (tolerates whitespace); `_scan(r.arguments)` clause dropped at `integrity.py:115` (only tool *outputs* count). After these fixes, `make ex5` now exits non-zero with `dataflow FAIL: 1 unverified fact(s): ['£ 540']` — verified just before this submission. Concrete artefact: `sessions/sess_2f5bd9478e9b/workspace/flyer.html` carries the fabricated values; the same session's `logs/tickets/{tk_844e0ff0,tk_c5b0dbbb,tk_f84530ed}/state.json` all show `"state": "success"`, which is precisely why the integrity check matters — every other primitive in the framework says this run succeeded. The check is the only thing that disagrees.
+
+**Memory-persists-across-restart corollary**: the same Q2 logic applies to Ex6's validator memory. After the Ex6 slide work shipped, every booking validation writes a markdown artefact under `memory/semantic/booking_*.md` (`starter/rasa_half/memory.py`). `sessions/sess_31afe581cfc4/memory/semantic/` contains both a round-1 rejection (`booking_e9f1fbd5_vegan_ratio_too_high.md`) and a round-2 confirmation (`booking_BK-A66CC39E.md`) — both written during the run, both still readable now from a fresh shell. The fact that you (or the grader) can `cat` these files from git well after the writing process exited is the load-bearing evidence that the memory primitive persists across restart.
+
+### Slide Q3 — If you had to reduce the homework to three exercises, which would you keep?
+
+> "If you had to reduce the homework to three exercises, which would you keep? Honest feedback. No wrong answer; we grade on the quality of your reasoning."
+
+**Keep: Ex5, Ex6, Ex7. Cut: Ex8.** (Ex9 is reflection, not an "exercise" in this sense.)
+
+Reasoning ordered by what each exercise uniquely teaches:
+
+**Ex5 (loop half + dataflow integrity)** is the foundation — without it, students never see what "let the LLM drive" actually looks like on a real model, and never confront the planner→executor information-loss pattern that Ex5 Task B / Q3 above is built around. The dataflow integrity primitive (`integrity.py`) introduced in Ex5 is the single most reusable idea in the whole homework: *every tool output is logged, every emitted fact is verified against those logs.* If a student leaves the course remembering one thing, it should be this. Cutting Ex5 cuts the lesson.
+
+**Ex6 (structured half + Rasa)** is the contrast piece. Ex5 shows what the LLM does well (open-ended research) and badly (constraint-following under noise). Ex6 shows the right response: *deterministic rules in Python at a process boundary*, regardless of LLM behaviour. Rasa is heavyweight — and honestly I'd consider replacing it with a lighter Python-only structured half for pedagogy, since the lesson is about the **boundary**, not Rasa specifically — but the *exercise* of standing up an external rule engine is exactly what teaches students why agent-LLM-only architectures are brittle in production.
+
+**Ex7 (handoff bridge)** is where Ex5 and Ex6 cash out. Without the bridge, the two halves are unrelated pieces; with it, students see reverse handoffs, multi-round adaptation, max-rounds budgets, and the trace-event vocabulary that makes a hybrid agent debuggable. Cutting Ex7 leaves Ex5+Ex6 as two unconnected demos.
+
+**Cut: Ex8 (voice pipeline).** Honest: it's well-built and fun, but it doesn't teach a unique *agent* concept — STT and TTS are I/O adapters that wrap whatever LLM call sits behind them, and the manager-persona work is a vanilla executor pattern Ex5 already covers. The only genuinely new lesson is graceful degradation under missing credentials, and that lesson is better taught generically (the same pattern applies to Nebius key, Rasa license, etc.) rather than via the specific Speechmatics/Rime stack. Removing Ex8 also removes the install/credential friction that's the largest dropout point in the course — useful gain for marginal pedagogical loss.
+
+If forced to pick a fourth: I'd add a *deployment* exercise (Docker + CI + secrets management around the existing three) rather than another scenario. The gap in the current homework is that "real-mode" stops at one Python process — students never see what shipping looks like.

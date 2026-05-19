@@ -253,7 +253,9 @@ async def run_scenario(real: bool, profile: str) -> int:
         "ex7-handoff-bridge", persist=True
     ) as sessions_root:  # persist amended to preserve trace
         if profile == "slide":
-            initial_task = "book a 160-person webinar venue near Haymarket on 2026-05-19, vegan options"
+            initial_task = (
+                "book a 160-person webinar venue near Haymarket on 2026-05-19, vegan options"
+            )
             scenario_label = "ex7-handoff-bridge-slide"
         else:
             initial_task = "book for party of 12 in Haymarket"
@@ -275,7 +277,9 @@ async def run_scenario(real: bool, profile: str) -> int:
         else:
             rasa_half = RasaStructuredHalf()
 
-        client = _build_fake_client_slide() if profile == "slide" else _build_fake_client_two_rounds()
+        client = (
+            _build_fake_client_slide() if profile == "slide" else _build_fake_client_two_rounds()
+        )
         tools = build_tool_registry(session)
         loop_half = LoopHalf(
             planner=DefaultPlanner(model="fake", client=client),
