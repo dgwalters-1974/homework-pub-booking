@@ -1,20 +1,18 @@
 # Ex9 — Reflection
 
-(answers to these questions were forced to respect the word limits requested - there are more details / more thorough discussions in some of the earlier answer sheets (Ex5 through Ex8) should you require them. It wasn't clear to me if we were supposed to fill those answers in or just this one, and if so, whether the word limit applied - pls ignore if this is the case)
-
 ## Q1 — Planner handoff decision
 
 > "Find a point in your Ex7 logs where the planner decided to hand off to the structured half. Quote the planner's reasoning or the specific subgoal's `assigned_half` field. What signal caused the decision?"
 
-### Your answer
+### Answer
 
-In my Ex7 run (`sessions/sess_7adc10a30e4c`), the planner did **not** assign any subgoal to the structured half. The planner ran twice -once per round — and each call produced a single subgoal with `assigned_half: "loop"`. `session.json` only retains the latest planner state, so `.planner.subgoals` shows just the round-2 subgoal (`sg_1`: "retry with larger venue after rejection"); the round-1 subgoal ("find venue near haymarket for 12") is recoverable from `logs/trace.jsonl` via the two `planner.called` / `planner.produced_subgoals` events.
+In my Ex7 run (`sessions/sess_7adc10a30e4c`), the planner did not assign any subgoal to the structured half. The planner ran twice -once per round — and each call produced a single subgoal with `assigned_half: "loop"`. `session.json` only retains the latest planner state, so `.planner.subgoals` shows just the round-2 subgoal (`sg_1`: "retry with larger venue after rejection"); the round-1 subgoal ("find venue near haymarket for 12") is recoverable from `logs/trace.jsonl` via the two `planner.called` / `planner.produced_subgoals` events.
 
-What this tells us is that the loop-to-structured transition wasn't a planner-level decision - it happened one layer down, in the executor. In `logs/trace.jsonl`, after each subgoal's `venue_search` call (this can be seen on lines 5 & 12 of the unformatted `logs/trace.jsonl`), the next `executor.tool_called` event has `payload.tool == "handoff_to_structured"` (e.g. round-1 turn 2 carries `data.venue_id = "Haymarket Tap"`). The bridge then reads `loop_result.next_action == "handoff_to_structured"` (`bridge.py:92`), calls `build_forward_handoff` / `write_handoff` (`bridge.py:103-104`) and emits `session.state_changed` with `from: "loop", to: "structured", round: 1`.
+This tells us is that the loop-to-structured transition wasn't a planner-level decision - it happened one layer down, in the executor. In `logs/trace.jsonl`, after each subgoal's `venue_search` call (this can be seen on lines 5 & 12 of the unformatted `logs/trace.jsonl`), the next `executor.tool_called` event has `payload.tool == "handoff_to_structured"` (e.g. round-1 turn 2 carries `data.venue_id = "Haymarket Tap"`). The bridge then reads `loop_result.next_action == "handoff_to_structured"` (`bridge.py:92`), calls `build_forward_handoff` / `write_handoff` (`bridge.py:103-104`) and emits `session.state_changed` with `from: "loop", to: "structured", round: 1`.
 
 The signal that caused the decision was therefore the existence of a `handoff_to_structured` tool in the executor's tool registry, plus the executor LLM's interpretation of "venue identified" as a state worth committing under policy rules. In our offline run the FakeLLMClient script hardcoded that choice; in a real-LLM run the same conclusion would emerge from the executor system prompt (`executor/__init__.py:58-73`), which explicitly tells the LLM to call `handoff_to_structured` when appropriate.
 
-Looking a bit deeper at this, the planner's `assigned_half` field is just advisory, not 'load-bearing'. The meaningful handoff decision comes in the tool layer — whether `handoff_to_structured` exists at all — and emerges from the executor LLM's tool choice. This connects to the planner info-compression issue I documented in Ex5: the planner's outputs are heavily summarised before they reach the executor, so decisions made at the planner level often don't survive intact right the way through the pipeline.
+Looking a bit deeper at this, the planner's `assigned_half` field is just advisory. The meaningful handoff decision comes in the tool layer — whether `handoff_to_structured` exists at all — and emerges from the executor LLM's tool choice. This connects to the planner info-compression issue I documented in Ex5: the planner's outputs are heavily summarised before they reach the executor, so decisions made at the planner level often don't survive intact right the way through the pipeline.
 
 ### Citation
 
@@ -30,11 +28,11 @@ Looking a bit deeper at this, the planner's `assigned_half` field is just adviso
 
 > "Describe one instance where your Ex5 dataflow integrity check caught something manual inspection missed, OR (if you never saw it trigger) describe a plausible scenario where it WOULD catch a failure that a human reviewer wouldn't. Your scenario must be specific enough that someone else could construct the test case."
 
-### Your answer
+### Answer
 
 The Ex5 offline harness (`make ex5`, session `sessions/sess_2f5bd9478e9b`) delivers a deliberately fabricated flyer - the FakeLLMClient script in `starter/edinburgh_research/run.py` contains `event_details = {"total_gbp": 540, "deposit_required_gbp": 0, ...}`, while `calculate_cost('haymarket_tap', 6, 3, 'bar_snacks')` actually returns `total=556, deposit=111` (independently derivable from `sample_data/catering.json` + `sample_data/venues.json:haymarket_tap`).
 
-As the code was initially, `verify_dataflow` reports "OK" anyway because of two bugs in `integrity.py`:
+In the original code, `verify_dataflow` reports "OK" anyway because of two bugs in `integrity.py`:
 
 - **Bug 1** (`integrity.py lines 64-68`): the regex `£\d+` requires `£` adjacent to a digit, but `tools.py:353,357` renders its monetary output as nested `<span>£<span data-testid="...">N</span></span>` tags that become `" £ 540 "` after tag-stripping. The details actually never get extracted at all.
 - **Bug 2** (`integrity.py line 112`): `fact_appears_in_log` scans both `r.output` AND `r.arguments`, so the LLM's hallucinated values self-verify via `generate_flyer`'s own arguments dict — the artefact-builder is marking its own work.
@@ -59,7 +57,7 @@ The lesson here (also visible in this run) is that integrity checks must verify 
 
 > "If you were shipping this agent to a real pub-booking business next week, what's the first production failure you'd expect, and which sovereign-agent primitive (ticket state machine, manifest discipline, IPC atomic rename, SessionQueue retry, etc.) would surface it? One specific primitive, one specific failure mode."
 
-### Your answer
+### Answer
 
 **Primitive: manifest discipline** (every tool call recorded into `_TOOL_CALL_LOG` via `record_tool_call`, with the rubric's −3pt penalty for any tool that bypasses this).
 **First production failure mode I'd expect: a real LLM violating the task's HARD RULES because they don't reach the executor.**
@@ -84,7 +82,7 @@ The lesson here is that prompt-level rules are largely decorative and not to be 
 
 ---
 
-## Addendum (2026-05-19) — slide-version Q1–Q3
+## Added later (2026-05-19) — slide-version of this project had different questions Q1–Q3
 
 The lecture slides circulated a slightly different Q1–Q3 set after I'd written the answers above. Rather than rewrite, I've added the slide versions here. Each ≥100 words, grounded in specific sessions and lines.
 
@@ -129,5 +127,3 @@ Reasoning ordered by what each exercise uniquely teaches:
 **Ex7 (handoff bridge)** is where Ex5 and Ex6 cash out. Without the bridge, the two halves are unrelated pieces; with it, students see reverse handoffs, multi-round adaptation, max-rounds budgets, and the trace-event vocabulary that makes a hybrid agent debuggable. Cutting Ex7 leaves Ex5+Ex6 as two unconnected demos.
 
 **Cut: Ex8 (voice pipeline).** Honest: it's well-built and fun, but it doesn't teach a unique *agent* concept — STT and TTS are I/O adapters that wrap whatever LLM call sits behind them, and the manager-persona work is a vanilla executor pattern Ex5 already covers. The only genuinely new lesson is graceful degradation under missing credentials, and that lesson is better taught generically (the same pattern applies to Nebius key, Rasa license, etc.) rather than via the specific Speechmatics/Rime stack. Removing Ex8 also removes the install/credential friction that's the largest dropout point in the course — useful gain for marginal pedagogical loss.
-
-If forced to pick a fourth: I'd add a *deployment* exercise (Docker + CI + secrets management around the existing three) rather than another scenario. The gap in the current homework is that "real-mode" stops at one Python process — students never see what shipping looks like.
