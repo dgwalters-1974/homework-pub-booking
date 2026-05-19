@@ -1,0 +1,21 @@
+{
+  "ticket_id": "tk_e5b582ff",
+  "operation": "planner.plan",
+  "started_at": "2026-05-19T14:53:40.608006+00:00",
+  "completed_at": "2026-05-19T14:53:40.608333+00:00",
+  "duration_ms": 0,
+  "outputs": [
+    {
+      "path": "/Users/dgwalters/Library/Application Support/sovereign-agent/examples/ex7-handoff-bridge/sess_31afe581cfc4/logs/tickets/tk_e5b582ff/raw_output.json",
+      "sha256": "92232a14b84342b10a5dad9169fa2283cf46fdee904f5b100079401c73486dd1",
+      "size_bytes": 303,
+      "content_type": "application/json"
+    }
+  ],
+  "metrics": {
+    "num_subgoals": 1,
+    "llm_tokens_in": 10,
+    "llm_tokens_out": 10,
+    "llm_model": "fake"
+  }
+}

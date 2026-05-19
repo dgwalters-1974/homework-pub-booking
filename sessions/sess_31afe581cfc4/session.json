@@ -1,0 +1,54 @@
+{
+  "session_id": "sess_31afe581cfc4",
+  "version": 1,
+  "created_at": "2026-05-19T14:53:40.603492+00:00",
+  "updated_at": "2026-05-19T14:53:40.632280+00:00",
+  "scenario": "ex7-handoff-bridge-slide",
+  "state": "completed",
+  "user_id": null,
+  "current_half": "loop",
+  "planner": {
+    "subgoals": [
+      {
+        "id": "sg_1",
+        "description": "renegotiate menu to bring vegan share under the cap",
+        "success_criterion": "lower vegan_ratio with same venue",
+        "estimated_tool_calls": 1,
+        "depends_on": [],
+        "assigned_half": "loop",
+        "status": "pending"
+      }
+    ]
+  },
+  "executor": {},
+  "structured": {},
+  "memory": {},
+  "handoff_history": [],
+  "bare_mode": false,
+  "config_overrides": {},
+  "result": {
+    "committed": true,
+    "booking": {
+      "venue_id": "haymarket_tap",
+      "date": "2026-05-19",
+      "time": "17:00",
+      "party_size": 160,
+      "deposit_gbp": 300,
+      "duration_hours": 3,
+      "catering_tier": "bar_snacks",
+      "policy_profile": "slide",
+      "vegan_ratio": 0.5
+    },
+    "booking_reference": "BK-A66CC39E",
+    "rasa_response": [
+      {
+        "text": "Booking confirmed. Reference: BK-A66CC39E.",
+        "custom": {
+          "action": "committed",
+          "booking_reference": "BK-A66CC39E"
+        }
+      }
+    ]
+  },
+  "resumed_from": null
+}

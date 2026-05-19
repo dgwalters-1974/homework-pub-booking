@@ -225,3 +225,20 @@ After 3 rounds of rejection, `session.mark_failed(...)` is called (state transit
 | `session.state_changed` for each transition | 3 | ✓ 4 events for 4 transitions |
 | Grader's planted failure caught + reported | 3 | ✓ code path covered; not manually exercised |
 | **Total** | **20/20** | |
+
+---
+
+## Addendum (2026-05-19) — slide-policy round-trip
+
+After Ex6 grew a `policy_profile` flag (`starter/rasa_half/policies.py`) covering the Nebius Academy slide scenario (party ≤ 170 / deposit ≤ £300 / `vegan_ratio ≤ 0.80`), I added a `--profile` flag to `starter/handoff_bridge/run.py` and re-ran the bridge end-to-end to verify that `policy_profile` survives the loop → bridge → structured path.
+
+Two extra sessions persisted for inspection:
+
+| Session | Profile | Scripted round 1 | Scripted round 2 | Outcome |
+|---|---|---|---|---|
+| `sessions/sess_c2d9e41f606e` | default | party=12 → `party_too_large` reject | party=6 → confirm | completed (2 rounds) |
+| `sessions/sess_31afe581cfc4` | **slide** | party=160, vegan_ratio=0.9, policy_profile=slide → `vegan_ratio_too_high` reject | vegan_ratio=0.5 (same venue, same party) → confirm `BK-A66CC39E` | completed (2 rounds) |
+
+The slide-session reject in round 1 is the load-bearing evidence: `vegan_ratio_too_high` is a slide-only rule (the default policy has `max_vegan_ratio=None` and never checks the field), so the fact that the validator fired this rejection proves `policy_profile="slide"` threaded all the way through `handoff_to_structured` → `build_forward_handoff` (`bridge.py:186`) → `RasaStructuredHalf.run` → `normalise_booking_payload` (`validator.py:91-108`) → `ActionValidateBooking` (`actions.py:120-121`). No bridge edits were needed — the `data` field is a transparent passthrough.
+
+Each session carries an `extras/profile.txt` marker (analogous to Ex5 Task C's `extras/combo.txt`) describing the profile, scripted scenario, and outcome. The slide session also contains validator-written memory artefacts under `memory/semantic/`: `booking_e9f1fbd5_vegan_ratio_too_high.md` (round-1 reject) and `booking_BK-A66CC39E.md` (round-2 confirm).

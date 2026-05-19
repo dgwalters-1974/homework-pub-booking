@@ -1,0 +1,7 @@
+profile=default
+scenario=ex7-handoff-bridge
+client=FakeLLMClient (scripted)
+structured_half=RasaStructuredHalf (mock)
+rounds=2
+outcome=completed
+notes=Original Ex7 scenario. Round 1: party=12 rejected (party_too_large under default policy cap=8). Round 2: party=6 accepted. Demonstrates reverse handoff under default profile.

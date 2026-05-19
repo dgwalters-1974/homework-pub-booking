@@ -1,0 +1,11 @@
+[
+  {
+    "id": "sg_1",
+    "description": "renegotiate menu to bring vegan share under the cap",
+    "success_criterion": "lower vegan_ratio with same venue",
+    "estimated_tool_calls": 1,
+    "depends_on": [],
+    "assigned_half": "loop",
+    "status": "pending"
+  }
+]

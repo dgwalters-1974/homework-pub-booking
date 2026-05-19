@@ -1,0 +1,20 @@
+{
+  "ticket_id": "tk_08eea17b",
+  "operation": "executor.run_subgoal/sg_1",
+  "started_at": "2026-05-19T14:53:28.138516+00:00",
+  "completed_at": "2026-05-19T14:53:28.139507+00:00",
+  "duration_ms": 0,
+  "outputs": [
+    {
+      "path": "/Users/dgwalters/Library/Application Support/sovereign-agent/examples/ex7-handoff-bridge/sess_c2d9e41f606e/logs/tickets/tk_08eea17b/raw_output.json",
+      "sha256": "4417d7349003c0a46442a3314c6d9c92cef22a87d48e4692c4481713edf69bbe",
+      "size_bytes": 1657,
+      "content_type": "application/json"
+    }
+  ],
+  "metrics": {
+    "tool_calls": 2,
+    "turns_used": 2,
+    "handoff_requested": true
+  }
+}

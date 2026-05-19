@@ -1,0 +1,11 @@
+[
+  {
+    "id": "sg_1",
+    "description": "find venue for 160-person webinar event near Haymarket with vegan options",
+    "success_criterion": "candidate identified, deposit within budget",
+    "estimated_tool_calls": 2,
+    "depends_on": [],
+    "assigned_half": "loop",
+    "status": "pending"
+  }
+]

@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "from_half": "loop",
+  "to_half": "structured",
+  "written_at": "2026-05-19T14:53:40.630826+00:00",
+  "session_id": "sess_31afe581cfc4",
+  "reason": "loop-half requested confirmation",
+  "context": "executor requested handoff to structured from sg_1",
+  "data": {
+    "action": "confirm_booking",
+    "venue_id": "Haymarket Tap",
+    "date": "2026-05-19",
+    "time": "17:00",
+    "party_size": "160",
+    "deposit": "\u00a3300",
+    "vegan_ratio": 0.5,
+    "policy_profile": "slide"
+  },
+  "return_instructions": "If you cannot confirm (party too large, deposit too high, etc.), respond with next_action=escalate and include a human-readable 'reason' in output so the loop half can adapt.",
+  "constraints_reminder": null
+}

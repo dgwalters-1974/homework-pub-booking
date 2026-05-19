@@ -1,0 +1,7 @@
+profile=slide
+scenario=ex7-handoff-bridge-slide
+client=FakeLLMClient (scripted)
+structured_half=RasaStructuredHalf (mock)
+rounds=2
+outcome=completed
+notes=Slide-policy round-trip via `--profile slide`. Round 1: party=160 + vegan_ratio=0.9 + policy_profile=slide → rejected (vegan_ratio_too_high — a SLIDE-ONLY rule, so positive outcome confirms policy_profile threaded through handoff_to_structured → bridge → RasaStructuredHalf → normaliser → ActionValidateBooking). Round 2: vegan_ratio=0.5 → accepted (BK-A66CC39E). Memory artefacts written under memory/semantic/ on both outcomes.
